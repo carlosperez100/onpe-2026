@@ -1,45 +1,47 @@
 {
-  "ultima_actualizacion": "10/06/2026 13:35:00 (datos iniciales de prensa)",
+  "ultima_actualizacion": "10/06/2026 16:06:00 (datos actuales ONPE)",
   "actual": {
-    "timestamp_legible": "10/06/2026 13:35:00",
+    "timestamp_legible": "10/06/2026 16:06:00",
     "nacional": {
       "sanchez": {
-        "votos": 9013284,
-        "pct_validos": 50.017
+        "votos": 9017771,
+        "pct_validos": 50.025
       },
       "fujimori": {
-        "votos": 9007157,
-        "pct_validos": 49.983
+        "votos": 9008686,
+        "pct_validos": 49.975
       },
       "meta": {
-        "actas_contabilizadas": 97.83,
+        "actas_contabilizadas": 97.904,
         "participacion": 68.474
       }
     },
     "lima": {
       "sanchez": {
-        "pct_validos": 36.5
+        "votos": 2267307,
+        "pct_validos": 36.501
       },
       "fujimori": {
-        "pct_validos": 63.5
+        "votos": 3944393,
+        "pct_validos": 63.499
       }
     },
     "extranjero": {
       "sanchez": {
-        "votos": 92778,
-        "pct_validos": 36.637
+        "votos": 92886,
+        "pct_validos": 36.632
       },
       "fujimori": {
-        "votos": 160461,
-        "pct_validos": 63.363
+        "votos": 160679,
+        "pct_validos": 63.368
       }
     },
     "resto": {
       "sanchez": {
-        "pct_validos": 57.58
+        "pct_validos": 57.63
       },
       "fujimori": {
-        "pct_validos": 42.42
+        "pct_validos": 42.37
       }
     }
   },
@@ -223,6 +225,16 @@
       "fujimori_votos": 9007157,
       "fujimori_pct": 49.983,
       "brecha": 6127
+    },
+    {
+      "ts": "2026-06-10T16:06:00",
+      "hora": "10/06 16:06",
+      "actas": 97.904,
+      "sanchez_votos": 9017771,
+      "sanchez_pct": 50.025,
+      "fujimori_votos": 9008686,
+      "fujimori_pct": 49.975,
+      "brecha": 9085
     }
   ]
 }
