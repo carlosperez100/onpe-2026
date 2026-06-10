@@ -21,43 +21,74 @@ PERU_TZ = timezone(timedelta(hours=-5))
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "docs", "data.json")
 
 
+def get_raw(url):
+    """GET con fingerprint de Chrome. Devuelve (status, texto)."""
+    r = cffi.get(url, impersonate=IMPERSONATE, timeout=TIMEOUT,
+                 headers={"Accept": "application/json, text/plain, */*"})
+    return r.status_code, r.text
+
+
 def get(url):
-    """GET con fingerprint de Chrome. Devuelve el payload dentro de 'data'."""
-    r = cffi.get(url, impersonate=IMPERSONATE, timeout=TIMEOUT)
-    r.raise_for_status()
-    body = r.json()
-    return body.get("data", body)
+    """GET que parsea JSON. Lanza error claro si no es JSON."""
+    status, text = get_raw(url)
+    snippet = (text or "")[:200].replace("\n", " ")
+    if status != 200:
+        raise RuntimeError(f"HTTP {status} en {url} | inicio: {snippet}")
+    if not text or not text.strip():
+        raise RuntimeError(f"Respuesta VACIA en {url}")
+    try:
+        body = json.loads(text)
+    except json.JSONDecodeError:
+        raise RuntimeError(f"No es JSON ({url}). ONPE devolvio: {snippet}")
+    return body.get("data", body) if isinstance(body, dict) else body
 
 
 def get_id_eleccion():
-    """Detecta automáticamente la elección activa (segunda vuelta)."""
-    url = f"{BASE}/presentacion-backend/proceso/proceso-electoral-activo"
-    data = get(url)
-    # El payload puede ser dict con idEleccion o lista
-    if isinstance(data, dict):
-        return data.get("idEleccion") or data.get("id_eleccion")
-    if isinstance(data, list) and data:
-        return data[0].get("idEleccion") or data[0].get("id_eleccion")
-    raise RuntimeError("No se pudo detectar idEleccion")
+    """Detecta la eleccion activa probando varios endpoints conocidos."""
+    candidatos_url = [
+        f"{BASE}/presentacion-backend/proceso/proceso-electoral-activo",
+        f"{BASE}/presentacion-backend/proceso/activo",
+        f"{BASE}/presentacion-backend/procesos/activo",
+        f"{BASE}/api/proceso/proceso-electoral-activo",
+    ]
+    ultimo_error = None
+    for url in candidatos_url:
+        try:
+            data = get(url)
+            idv = None
+            if isinstance(data, dict):
+                idv = data.get("idEleccion") or data.get("id_eleccion") or data.get("id")
+            elif isinstance(data, list) and data:
+                idv = data[0].get("idEleccion") or data[0].get("id_eleccion") or data[0].get("id")
+            if idv:
+                print(f"  [ok] idEleccion={idv} via {url}")
+                return idv
+        except Exception as e:
+            ultimo_error = e
+            print(f"  [intento] {url} -> {e}")
+    raise RuntimeError(f"No se pudo detectar idEleccion. Ultimo error: {ultimo_error}")
 
 
 def get_totales(id_eleccion, tipo_filtro="eleccion", ubigeo=None, ambito=None):
-    """
-    Obtiene totales por candidato segun filtro geografico.
-    tipo_filtro: eleccion | ubigeo_nivel_01 | ambito_geografico
-    """
-    url = f"{BASE}/presentacion-backend/candidatos/totales"
+    """Obtiene totales por candidato segun filtro geografico, probando rutas."""
+    bases = [
+        f"{BASE}/presentacion-backend/candidatos/totales",
+        f"{BASE}/presentacion-backend/totales/candidatos",
+        f"{BASE}/api/candidatos/totales",
+    ]
     params = [f"idEleccion={id_eleccion}", f"tipoFiltro={tipo_filtro}"]
     if ubigeo:
         params.append(f"ubigeo={ubigeo}")
     if ambito:
         params.append(f"idAmbitoGeografico={ambito}")
-    full_url = url + "?" + "&".join(params)
-    try:
-        return get(full_url)
-    except Exception as e:
-        print(f"  [warn] fallo totales {tipo_filtro}: {e}")
-        return None
+    qs = "?" + "&".join(params)
+    for b in bases:
+        try:
+            return get(b + qs)
+        except Exception as e:
+            print(f"  [intento totales {tipo_filtro}] {b} -> {e}")
+    print(f"  [warn] sin datos para {tipo_filtro}")
+    return None
 
 
 def parse_candidatos(data):
@@ -96,7 +127,13 @@ def main():
     ts_legible = ahora.strftime("%d/%m/%Y %H:%M:%S")
 
     print(f"[{ts_legible}] Iniciando captura ONPE...")
-    id_eleccion = get_id_eleccion()
+    try:
+        id_eleccion = get_id_eleccion()
+    except Exception as e:
+        # ONPE no respondio JSON: NO romper el workflow ni borrar data.json
+        print(f"  [AVISO] ONPE no entrego datos: {e}")
+        print("  [AVISO] Se conserva el data.json actual. El dashboard sigue mostrando el ultimo dato bueno.")
+        return  # salida limpia (exit 0)
     print(f"  idEleccion = {id_eleccion}")
 
     # Nacional
