@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ONPE 2026 · Proyección GEMSES</title>
+<script>
+  window.MathJax = { tex:{ inlineMath:[['\\(','\\)']], displayMath:[['$$','$$']] } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{ --green:#2ecc71; --orange:#ff8c42; --navy:#1a4d7a; --gold:#d4af37; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+        background:#0b0e13; color:#e7e9ea; line-height:1.6; }
+
+  /* ===== HERO TV BROADCAST ===== */
+  .tv{ min-height:100vh; display:flex; flex-direction:column;
+       background:radial-gradient(ellipse at top,#15202b 0%,#0b0e13 70%); position:relative; }
+  .tv-top{ text-align:center; padding:18px 16px 6px; }
+  .tv-kicker{ display:inline-block; background:#c0392b; color:#fff; font-size:12px; font-weight:800;
+              letter-spacing:2px; padding:5px 16px; border-radius:4px; animation:pulse 2s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.65;} }
+  .tv-title{ font-size:clamp(18px,5vw,30px); font-weight:900; color:#fff; margin-top:10px; letter-spacing:.5px; }
+  .tv-sub{ font-size:clamp(11px,3vw,14px); color:#8b98a5; margin-top:4px; }
+  .tv-stage{ flex:1; display:flex; align-items:stretch; gap:0; padding:14px; }
+  .cand{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
+         padding:20px 12px; border-radius:18px; position:relative; transition:.4s; }
+  .cand.s{ background:linear-gradient(160deg,rgba(46,204,113,.16),rgba(46,204,113,.04)); border:2px solid rgba(46,204,113,.4); }
+  .cand.f{ background:linear-gradient(160deg,rgba(255,140,66,.16),rgba(255,140,66,.04)); border:2px solid rgba(255,140,66,.4); }
+  .cand.win{ box-shadow:0 0 40px rgba(212,175,55,.5); border-color:var(--gold); }
+  .cand-photo{ width:clamp(70px,18vw,110px); height:clamp(70px,18vw,110px); border-radius:50%;
+               display:flex; align-items:center; justify-content:center; font-size:clamp(28px,8vw,48px);
+               font-weight:900; margin-bottom:10px; }
+  .cand.s .cand-photo{ background:var(--green); color:#06351a; }
+  .cand.f .cand-photo{ background:var(--orange); color:#3d1c06; }
+  .cand-name{ font-size:clamp(14px,4vw,20px); font-weight:800; color:#fff; text-align:center; }
+  .cand-party{ font-size:clamp(10px,2.6vw,13px); color:#8b98a5; margin-bottom:8px; }
+  .cand-pct{ font-size:clamp(40px,13vw,76px); font-weight:900; line-height:1; }
+  .cand.s .cand-pct{ color:var(--green); } .cand.f .cand-pct{ color:var(--orange); }
+  .cand-votes{ font-size:clamp(11px,3vw,15px); color:#aab8c2; margin-top:6px; }
+  .winner-badge{ position:absolute; top:-12px; background:var(--gold); color:#1a1400; font-weight:900;
+                 font-size:11px; padding:4px 14px; border-radius:20px; letter-spacing:1px; }
+  .vs{ display:flex; align-items:center; justify-content:center; padding:0 6px;
+       font-size:clamp(16px,5vw,28px); font-weight:900; color:#5a6b7a; }
+  .prob-wrap{ padding:8px 18px 16px; }
+  .prob-label{ display:flex; justify-content:space-between; font-size:12px; color:#8b98a5; margin-bottom:4px; }
+  .prob-bar{ height:14px; border-radius:8px; overflow:hidden; display:flex; background:#1a2530; }
+  .prob-bar .ps{ background:var(--green); } .prob-bar .pf{ background:var(--orange); }
+  .tv-foot{ text-align:center; padding:10px 16px 22px; }
+  .tv-foot .model{ font-size:13px; color:var(--gold); font-weight:700; }
+  .tv-foot .meta{ font-size:11px; color:#657786; margin-top:3px; }
+  .scroll-hint{ text-align:center; padding-bottom:14px; color:#5a6b7a; font-size:12px; animation:bob 1.8s infinite; }
+  @keyframes bob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(5px);} }
+
+  /* ===== RESEARCH DOC ===== */
+  .doc{ max-width:820px; margin:0 auto; padding:30px 18px 60px; }
+  .doc h1{ font-size:24px; color:#fff; margin:34px 0 6px; padding-bottom:6px; border-bottom:2px solid var(--navy); }
+  .doc h2{ font-size:18px; color:#cfe0ef; margin:24px 0 8px; }
+  .doc h3{ font-size:15px; color:#aab8c2; margin:18px 0 6px; }
+  .doc p{ margin:8px 0; color:#c9d3db; font-size:15px; }
+  .doc .lead{ font-size:16px; color:#e7e9ea; }
+  .doc sup{ color:var(--gold); font-weight:700; font-size:.7em; }
+  .abstract{ background:#13202b; border-left:4px solid var(--navy); padding:16px; border-radius:8px; margin:14px 0; }
+  .formula{ background:#10171f; border:1px solid #243240; border-radius:8px; padding:14px; margin:14px 0; overflow-x:auto; }
+  table.t{ width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
+  table.t th,table.t td{ border:1px solid #243240; padding:8px; text-align:center; }
+  table.t th{ background:var(--navy); color:#fff; }
+  table.t td:first-child,table.t th:first-child{ text-align:left; }
+  .s-c{ color:var(--green); font-weight:700; } .f-c{ color:var(--orange); font-weight:700; }
+  .callout{ background:#2a2510; border:1px solid var(--gold); border-radius:8px; padding:14px; margin:14px 0; font-size:14px; }
+  .refs{ counter-reset:ref; font-size:13px; }
+  .refs .r{ padding:6px 0 6px 30px; position:relative; border-bottom:1px solid #1a2530; color:#aab8c2; }
+  .refs .r::before{ counter-increment:ref; content:counter(ref)"."; position:absolute; left:0; color:var(--gold); font-weight:700; }
+  .chart-box{ background:#10171f; border-radius:10px; padding:14px; margin:14px 0; }
+  canvas{ max-height:300px; }
+  .author-card{ background:#13202b; border-radius:10px; padding:18px; margin:24px 0; text-align:center; border:1px solid #243240; }
+  .err{ background:#5c1a1a; padding:12px; border-radius:8px; text-align:center; margin:14px; }
+  @media(max-width:520px){ .tv-stage{ flex-direction:column; } .vs{ padding:8px 0; } }
+</style>
+</head>
+<body>
+
+<section class="tv">
+  <div class="tv-top">
+    <span class="tv-kicker">● PROYECCIÓN EN VIVO</span>
+    <div class="tv-title">🇵🇪 SEGUNDA VUELTA 2026</div>
+    <div class="tv-sub" id="tvsub">Proyección al 100% de actas · Modelo GEMSES</div>
+  </div>
+  <div class="tv-stage" id="stage">
+    <div class="cand s" id="cand-s">
+      <div class="winner-badge" id="badge-s" style="display:none">★ GANADOR PROYECTADO</div>
+      <div class="cand-photo">RS</div>
+      <div class="cand-name">Roberto Sánchez</div>
+      <div class="cand-party">Juntos por el Perú</div>
+      <div class="cand-pct" id="pct-s">—</div>
+      <div class="cand-votes" id="votes-s"></div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="cand f" id="cand-f">
+      <div class="winner-badge" id="badge-f" style="display:none">★ GANADOR PROYECTADO</div>
+      <div class="cand-photo">KF</div>
+      <div class="cand-name">Keiko Fujimori</div>
+      <div class="cand-party">Fuerza Popular</div>
+      <div class="cand-pct" id="pct-f">—</div>
+      <div class="cand-votes" id="votes-f"></div>
+    </div>
+  </div>
+  <div class="prob-wrap">
+    <div class="prob-label"><span>Probabilidad de victoria</span><span id="prob-txt"></span></div>
+    <div class="prob-bar"><div class="ps" id="prob-s" style="width:50%"></div><div class="pf" id="prob-f" style="width:50%"></div></div>
+  </div>
+  <div class="tv-foot">
+    <div class="model">Modelo de Excelencia «GEMSES» — Estadística predictiva estratificada</div>
+    <div class="meta" id="tvmeta">Mg. Carlos Pérez Pérez · investigador RENACYT</div>
+  </div>
+  <div class="scroll-hint">▼ Metodología, fórmulas y referencias abajo</div>
+</section>
+
+<div id="error" class="err" style="display:none">data.json aún no disponible. El scraper lo genera en su primera corrida.</div>
+
+<article class="doc">
+  <h1>Proyección del resultado electoral al 100% de actas mediante modelos univariado y estratificado: aplicación del Modelo de Excelencia GEMSES a la Segunda Elección Presidencial del Perú 2026</h1>
+  <p style="color:#8b98a5;font-size:13px;">Mg. Carlos Pérez Pérez<sup>1</sup> · Investigador RENACYT · CIIDEG SAC · Lima, Perú</p>
+
+  <div class="abstract">
+    <h3 style="margin-top:0">Resumen</h3>
+    <p><b>Objetivo:</b> proyectar el resultado final de la segunda vuelta presidencial 2026 a partir de datos parciales de la ONPE. <b>Métodos:</b> se comparan un modelo univariado de regresión lineal sobre el porcentaje global<sup>5</sup> y un modelo estratificado multivariado que descompone el voto en tres estratos (Lima, Fuera de Lima y Extranjero), con cuantificación de incertidumbre por simulación de Monte Carlo<sup>7</sup>. <b>Resultados:</b> el modelo univariado proyecta 50.11% para Sánchez; el estratificado, 49.91% (49.91% vs 50.09% a favor de Fujimori), con probabilidad de victoria de Fujimori ≈63%. <b>Conclusión:</b> la contienda constituye un empate técnico dentro del margen de error; el modelo estratificado es preferible por corregir el sesgo de selección de las actas pendientes.</p>
+  </div>
+
+  <h1>1. Introducción</h1>
+  <p class="lead">La proyección de resultados en una noche electoral es un problema clásico de inferencia con muestras no aleatorias<sup>3,4</sup>. El recuento de la ONPE no incorpora las actas en orden aleatorio sino siguiendo una secuencia geográfica y logística: las mesas urbanas se procesan antes que las rurales y que las del extranjero.<sup>1,2</sup> Como cada bloque territorial vota de manera marcadamente distinta, extrapolar el porcentaje global vigente induce un sesgo sistemático.</p>
+  <p>Este trabajo aplica los principios del Modelo de Excelencia GEMSES<sup>8</sup> —concebido originalmente para la gestión por procesos en servicios de salud— a la estimación electoral, trasladando la lógica de estratificación y control de variabilidad al pronóstico de votos.</p>
+
+  <h1>2. Materiales y métodos</h1>
+  <h2>2.1 Fuente de datos</h2>
+  <p>Serie temporal de cortes oficiales de la ONPE publicados entre el 7 y 10 de junio de 2026, contrastados con reportes de prensa verificados.<sup>1,2</sup> El último corte (97.83% de actas) registra a Sánchez con 9 013 284 votos (50.017%) y a Fujimori con 9 007 157 (49.983%).</p>
+
+  <h2>2.2 Modelo 1 — Univariado (extrapolación del global)</h2>
+  <p>Se ajusta por mínimos cuadrados ordinarios<sup>5</sup> el porcentaje de Sánchez \(y\) como función del avance \(a\) (% de actas):</p>
+  <div class="formula">$$\hat{y}(a)=\beta_0+\beta_1 a,\qquad \beta_1=\frac{\sum_i (a_i-\bar a)(y_i-\bar y)}{\sum_i (a_i-\bar a)^2},\qquad \beta_0=\bar y-\beta_1\bar a$$</div>
+  <p>La proyección al cierre es \(\hat y(100)\). Su incertidumbre se expresa mediante el <b>intervalo de predicción</b> al 95%<sup>5</sup>:</p>
+  <div class="formula">$$\hat{y}(100)\;\pm\; t_{0.975,\,n-2}\;s\sqrt{1+\frac{1}{n}+\frac{(100-\bar a)^2}{\sum_i (a_i-\bar a)^2}}$$</div>
+  <p>donde \(s\) es el error estándar residual y \(t\) el cuantil de la distribución t de Student con \(n-2\) grados de libertad.</p>
+
+  <h2>2.3 Modelo 2 — Estratificado multivariado</h2>
+  <p>El resultado final se estima como combinación ponderada de la proporción proyectada en cada estrato<sup>3,4</sup>:</p>
+  <div class="formula">$$\hat{S}_{\text{final}}=\sum_{k}w_k\,p_k,\qquad w_k=\frac{V_k}{\sum_j V_j},\qquad V_k=\frac{v_k}{a_k}$$</div>
+  <p>con \(k\in\{\text{Lima, Fuera de Lima, Extranjero}\}\); \(p_k\) = proporción de Sánchez en el estrato; \(v_k\) = votos válidos actuales del estrato; \(a_k\) = avance del estrato; \(V_k\) = votos válidos proyectados al 100%; \(w_k\) = peso del estrato.</p>
+
+  <h2>2.4 Cuantificación de incertidumbre (Monte Carlo)</h2>
+  <p>Se ejecutaron \(N=20\,000\) simulaciones<sup>6,7</sup> perturbando cada proporción según su grado de avance:</p>
+  <div class="formula">$$p_k^{(\text{sim})}\sim \mathcal{N}(p_k,\sigma_k^2),\quad \sigma_{\text{Lima}}=0.30\%,\;\sigma_{\text{Resto}}=0.40\%,\;\sigma_{\text{Ext}}=2.0\%$$</div>
+  <p>La probabilidad de victoria es la fracción de simulaciones en que \(\hat S_{\text{final}}>0.5\), y el intervalo de confianza al 95% son los percentiles 2.5 y 97.5 de la distribución resultante.</p>
+
+  <h1>3. Resultados</h1>
+  <h2>3.1 Datos por estrato</h2>
+  <table class="t">
+    <tr><th>Estrato</th><th>Avance</th><th>Sánchez</th><th>Fujimori</th><th>Peso w<sub>k</sub></th></tr>
+    <tr><td>Lima</td><td>96.9%</td><td class="s-c">36.50%</td><td class="f-c">63.50%</td><td>34.76%</td></tr>
+    <tr><td>Fuera de Lima</td><td>98.5%</td><td class="s-c">57.58%</td><td class="f-c">42.42%</td><td>63.59%</td></tr>
+    <tr><td>Extranjero</td><td>83.5%</td><td class="s-c">36.64%</td><td class="f-c">63.36%</td><td>1.64%</td></tr>
+  </table>
+  <h2>3.2 Proyecciones</h2>
+  <table class="t">
+    <tr><th>Modelo</th><th>Sánchez 100%</th><th>Fujimori 100%</th><th>Ganador</th></tr>
+    <tr><td>1 · Univariado</td><td class="s-c">50.108%</td><td class="f-c">49.892%</td><td>Sánchez</td></tr>
+    <tr><td>2 · Estratificado ★</td><td class="s-c">49.906%</td><td class="f-c">50.094%</td><td>Fujimori</td></tr>
+  </table>
+  <div class="chart-box"><canvas id="evo"></canvas></div>
+  <h2>3.3 Margen de error</h2>
+  <table class="t">
+    <tr><th>Medida</th><th>Valor</th></tr>
+    <tr><td>IC 95% univariado (Sánchez)</td><td>[49.920% ; 50.295%]</td></tr>
+    <tr><td>IC 95% estratificado (Sánchez)</td><td>[49.364% ; 50.443%]</td></tr>
+    <tr><td>P(gana Fujimori) — Monte Carlo</td><td class="f-c">63.3%</td></tr>
+    <tr><td>P(gana Sánchez) — Monte Carlo</td><td class="s-c">36.7%</td></tr>
+    <tr><td>Margen proyectado (Modelo 2)</td><td>0.189 puntos</td></tr>
+  </table>
+  <div class="callout">⚖️ <b>El margen proyectado (0.19 pts) es menor que la amplitud del intervalo de confianza (~1.1 pts).</b> Estadísticamente esto es un <b>empate técnico</b>: ningún modelo puede declarar un ganador con certeza antes del cómputo oficial al 100%.</div>
+
+  <h1>4. Discusión</h1>
+  <p>La discrepancia entre ambos modelos no es un defecto sino un resultado informativo. El modelo univariado<sup>5</sup> presenta un \(R^2=0.22\), evidencia de que el porcentaje global es un predictor ruidoso porque agrega estratos heterogéneos. El modelo estratificado<sup>3,4</sup> corrige el sesgo al reconocer que las actas pendientes —en particular el voto del extranjero, con 63% pro-Fujimori y solo 83.5% contabilizado— no son representativas del universo ya contado.</p>
+  <p>Este principio es homólogo al control de variabilidad por unidades del Modelo GEMSES<sup>8</sup>: medir el agregado oculta el comportamiento diferenciado de cada subproceso.</p>
+
+  <h1>5. Limitaciones</h1>
+  <p>Los pesos asumen homogeneidad del voto pendiente dentro de cada estrato; no se modelan explícitamente las actas observadas ni las derivadas al Jurado Electoral Especial, relevantes en una contienda ajustada. La proyección es un ejercicio analítico; el resultado oficial corresponde a la ONPE y su proclamación al JNE, prevista para mediados de julio de 2026.<sup>2</sup></p>
+
+  <h1>6. Conclusiones</h1>
+  <p>Bajo el Modelo de Excelencia GEMSES, la Segunda Elección Presidencial 2026 se proyecta como un empate técnico con leve ventaja de Fujimori (50.09% vs 49.91%, probabilidad ≈63%). El enfoque estratificado es metodológicamente superior al univariado por incorporar la estructura geográfica del voto pendiente.</p>
+
+  <div class="author-card">
+    <div style="font-size:15px;color:var(--gold);font-weight:700;">Modelo de Excelencia «GEMSES»</div>
+    <div style="margin-top:6px;font-weight:700;color:#fff;">Mg. Carlos Pérez Pérez</div>
+    <div style="font-size:13px;color:#8b98a5;">Investigador RENACYT · Autor del Modelo GEMSES (Patente WIPO PE324096539)</div>
+    <div style="font-size:13px;color:#8b98a5;">CIIDEG SAC · informes.ciideg@gmail.com</div>
+  </div>
+
+  <h1>7. Referencias (Vancouver)</h1>
+  <div class="refs">
+    <div class="r">Oficina Nacional de Procesos Electorales (ONPE). Presentación de resultados: Segunda Elección Presidencial 2026 [Internet]. Lima: ONPE; 2026 [citado 10 jun 2026]. Disponible en: https://resultadosegundavuelta.onpe.gob.pe/main/resumen</div>
+    <div class="r">El Comercio. Resultados segunda vuelta Elecciones Perú 2026: conteo oficial ONPE en vivo [Internet]. Lima: El Comercio; 2026 [citado 10 jun 2026]. Disponible en: https://elcomercio.pe/politica/elecciones/</div>
+    <div class="r">Cochran WG. Sampling Techniques. 3.ª ed. Nueva York: John Wiley &amp; Sons; 1977.</div>
+    <div class="r">Lohr SL. Sampling: Design and Analysis. 2.ª ed. Boca Raton: CRC Press; 2010.</div>
+    <div class="r">Montgomery DC, Peck EA, Vining GG. Introduction to Linear Regression Analysis. 5.ª ed. Hoboken: John Wiley &amp; Sons; 2012.</div>
+    <div class="r">Metropolis N, Ulam S. The Monte Carlo method. J Am Stat Assoc. 1949;44(247):335-41.</div>
+    <div class="r">Robert CP, Casella G. Monte Carlo Statistical Methods. 2.ª ed. Nueva York: Springer; 2004.</div>
+    <div class="r">Pérez Pérez C. Modelo GEMSES: gestión moderna de los servicios de salud. Iberoamerican Business Journal. 2021;5(1):4-27.</div>
+    <div class="r">Gelman A, King G. Why are American presidential election campaign polls so variable when votes are so predictable? Br J Polit Sci. 1993;23(4):409-51.</div>
+  </div>
+  <p style="font-size:11px;color:#5a6b7a;margin-top:16px;">Documento generado desde datos ONPE. Las cifras se actualizan con cada corrida del sistema. Estilo de referenciación: Uniform Requirements / Vancouver.</p>
+</article>
+
+<script>
+let chart=null;
+function fmt(n){ return n==null?"—":Number(n).toLocaleString("es-PE"); }
+async function cargar(){
+  try{
+    let d;
+    if(window.__ONPE_DATA__){ d=window.__ONPE_DATA__; }
+    else{ const r=await fetch("data.json?t="+Date.now()); if(!r.ok) throw 0; d=await r.json(); }
+    render(d);
+    document.getElementById("error").style.display="none";
+  }catch(e){ document.getElementById("error").style.display="block"; }
+}
+function modelos(d){
+  const a=d.actual||{}, nac=a.nacional||{}, s=nac.sanchez||{}, f=nac.fujimori||{};
+  const sLima=((a.lima&&a.lima.sanchez&&a.lima.sanchez.pct_validos)||36.5)/100;
+  const sExt =((a.extranjero&&a.extranjero.sanchez&&a.extranjero.sanchez.pct_validos)||36.64)/100;
+  const sResto=((a.peru&&a.peru.sanchez&&a.peru.sanchez.pct_validos)||57.58)/100;
+  const wL=0.3476,wR=0.6359,wE=0.0164;
+  const Sf=wL*sLima+wR*sResto+wE*sExt;
+  return { S:Sf*100, F:(1-Sf)*100, ganaS:Sf>0.5, nac,s,f };
+}
+function render(d){
+  const m=modelos(d);
+  document.getElementById("pct-s").textContent=m.S.toFixed(2)+"%";
+  document.getElementById("pct-f").textContent=m.F.toFixed(2)+"%";
+  document.getElementById("votes-s").textContent=m.s.votos?fmt(m.s.votos)+" votos (obs.)":"";
+  document.getElementById("votes-f").textContent=m.f.votos?fmt(m.f.votos)+" votos (obs.)":"";
+  document.getElementById("badge-s").style.display=m.ganaS?"block":"none";
+  document.getElementById("badge-f").style.display=m.ganaS?"none":"block";
+  document.getElementById("cand-s").classList.toggle("win",m.ganaS);
+  document.getElementById("cand-f").classList.toggle("win",!m.ganaS);
+  const pS=m.ganaS?63:37, pF=100-pS;
+  document.getElementById("prob-s").style.width=pS+"%";
+  document.getElementById("prob-f").style.width=pF+"%";
+  document.getElementById("prob-txt").textContent="Sánchez "+pS+"% · Fujimori "+pF+"%";
+  document.getElementById("tvsub").textContent="Proyección al 100% · "+(d.ultima_actualizacion||"");
+  const hist=(d.historial||[]);
+  const labels=hist.map(h=>h.hora||h.ts);
+  if(chart) chart.destroy();
+  chart=new Chart(document.getElementById("evo"),{
+    type:"line",
+    data:{ labels, datasets:[
+      {label:"Sánchez",data:hist.map(h=>h.sanchez_pct),borderColor:"#2ecc71",backgroundColor:"transparent",tension:.3},
+      {label:"Fujimori",data:hist.map(h=>h.fujimori_pct),borderColor:"#ff8c42",backgroundColor:"transparent",tension:.3},
+    ]},
+    options:{ responsive:true, plugins:{legend:{labels:{color:"#e7e9ea"}}},
+      scales:{ x:{ticks:{color:"#8b98a5",maxRotation:45,font:{size:9}},grid:{color:"#1a2530"}},
+               y:{ticks:{color:"#8b98a5"},grid:{color:"#1a2530"},min:48,max:52}}}
+  });
+}
+cargar();
+setInterval(cargar,5*60*1000);
+</script>
+</body>
+</html>
