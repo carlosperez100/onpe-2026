@@ -32,7 +32,8 @@
   .cand.win{ box-shadow:0 0 40px rgba(212,175,55,.5); border-color:var(--gold); }
   .cand-photo{ width:clamp(70px,18vw,110px); height:clamp(70px,18vw,110px); border-radius:50%;
                display:flex; align-items:center; justify-content:center; font-size:clamp(28px,8vw,48px);
-               font-weight:900; margin-bottom:10px; }
+               font-weight:900; margin-bottom:10px; overflow:hidden; }
+  .cand-photo img{ width:100%; height:100%; object-fit:cover; }
   .cand.s .cand-photo{ background:var(--green); color:#06351a; }
   .cand.f .cand-photo{ background:var(--orange); color:#3d1c06; }
   .cand-name{ font-size:clamp(14px,4vw,20px); font-weight:800; color:#fff; text-align:center; }
@@ -91,7 +92,7 @@
   <div class="tv-stage" id="stage">
     <div class="cand s" id="cand-s">
       <div class="winner-badge" id="badge-s" style="display:none">★ GANADOR PROYECTADO</div>
-      <div class="cand-photo">RS</div>
+      <div class="cand-photo"><img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/16002918.png" alt="Roberto Sánchez" onerror="this.parentNode.textContent='RS'"></div>
       <div class="cand-name">Roberto Sánchez</div>
       <div class="cand-party">Juntos por el Perú</div>
       <div class="cand-pct" id="pct-s">—</div>
@@ -100,7 +101,7 @@
     <div class="vs">VS</div>
     <div class="cand f" id="cand-f">
       <div class="winner-badge" id="badge-f" style="display:none">★ GANADOR PROYECTADO</div>
-      <div class="cand-photo">KF</div>
+      <div class="cand-photo"><img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/10001088.png" alt="Keiko Fujimori" onerror="this.parentNode.textContent='KF'"></div>
       <div class="cand-name">Keiko Fujimori</div>
       <div class="cand-party">Fuerza Popular</div>
       <div class="cand-pct" id="pct-f">—</div>
@@ -110,6 +111,14 @@
   <div class="prob-wrap">
     <div class="prob-label"><span>Probabilidad de victoria</span><span id="prob-txt"></span></div>
     <div class="prob-bar"><div class="ps" id="prob-s" style="width:50%"></div><div class="pf" id="prob-f" style="width:50%"></div></div>
+  </div>
+
+  <div class="eta-box" id="etabox" style="margin:0 18px 14px;background:#13202b;border:1px solid #243240;border-radius:12px;padding:14px;">
+    <div style="font-size:12px;color:#8b98a5;text-transform:uppercase;letter-spacing:1px;">⏱️ Estimación de cierre del conteo (100% de actas)</div>
+    <div id="eta-main" style="font-size:clamp(16px,4vw,22px);font-weight:800;color:#fff;margin-top:6px;">Calculando…</div>
+    <div id="eta-rate" style="font-size:12px;color:#aab8c2;margin-top:2px;"></div>
+    <div style="margin-top:10px;font-size:11px;color:#8b98a5;">Probabilidad de alcanzar el 100%:</div>
+    <div id="eta-prob" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"></div>
   </div>
   <div class="tv-foot">
     <div class="model">Modelo de Excelencia «GEMSES» — Estadística predictiva estratificada</div>
@@ -228,7 +237,9 @@ function modelos(d){
   const a=d.actual||{}, nac=a.nacional||{}, s=nac.sanchez||{}, f=nac.fujimori||{};
   const sLima=((a.lima&&a.lima.sanchez&&a.lima.sanchez.pct_validos)||36.5)/100;
   const sExt =((a.extranjero&&a.extranjero.sanchez&&a.extranjero.sanchez.pct_validos)||36.64)/100;
-  const sResto=((a.peru&&a.peru.sanchez&&a.peru.sanchez.pct_validos)||57.58)/100;
+  // "resto" = fuera de Lima; respaldo correcto 57.58%
+  const restoObj = a.resto || a.peru || {};
+  const sResto=((restoObj.sanchez&&restoObj.sanchez.pct_validos)||57.58)/100;
   const wL=0.3476,wR=0.6359,wE=0.0164;
   const Sf=wL*sLima+wR*sResto+wE*sExt;
   return { S:Sf*100, F:(1-Sf)*100, ganaS:Sf>0.5, nac,s,f };
@@ -248,19 +259,108 @@ function render(d){
   document.getElementById("prob-f").style.width=pF+"%";
   document.getElementById("prob-txt").textContent="Sánchez "+pS+"% · Fujimori "+pF+"%";
   document.getElementById("tvsub").textContent="Proyección al 100% · "+(d.ultima_actualizacion||"");
+
+  // ===== ETA al 100% =====
+  calcularETA(d);
+
+  // ===== Gráfico: zona REAL vs zona PROYECTADA =====
   const hist=(d.historial||[]);
   const labels=hist.map(h=>h.hora||h.ts);
+  const sReal=hist.map(h=>h.sanchez_pct);
+  const fReal=hist.map(h=>h.fujimori_pct);
+  // Añadir punto proyectado al 100%
+  labels.push("PROY 100%");
+  // arrays reales con null en el punto proyectado, y arrays proyectados solo en el último tramo
+  const lastIdx = sReal.length; // índice del nuevo punto
+  const sRealPlot = [...sReal, null];
+  const fRealPlot = [...fReal, null];
+  // segmento proyectado: conecta último real con proyección
+  const sProj = sReal.map(()=>null); sProj[sReal.length-1]=sReal[sReal.length-1]; sProj.push(m.S);
+  const fProj = fReal.map(()=>null); fProj[fReal.length-1]=fReal[fReal.length-1]; fProj.push(m.F);
+
+  // Plugin: pinta fondo distinto en zona REAL (azul) y zona PROYECTADA (dorado)
+  const zonas={ id:"zonas", beforeDraw(chart){
+    const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
+    const n=chart.data.labels.length; if(n<2) return;
+    const xReal0=x.getPixelForValue(0), xRealF=x.getPixelForValue(n-2), xProj=x.getPixelForValue(n-1);
+    ctx.save();
+    ctx.fillStyle="rgba(26,77,122,0.10)"; ctx.fillRect(xReal0,top,xRealF-xReal0,bottom-top); // zona real
+    ctx.fillStyle="rgba(212,175,55,0.14)"; ctx.fillRect(xRealF,top,xProj-xRealF,bottom-top);   // zona proyectada
+    ctx.restore();
+  }};
+
   if(chart) chart.destroy();
   chart=new Chart(document.getElementById("evo"),{
     type:"line",
     data:{ labels, datasets:[
-      {label:"Sánchez",data:hist.map(h=>h.sanchez_pct),borderColor:"#2ecc71",backgroundColor:"transparent",tension:.3},
-      {label:"Fujimori",data:hist.map(h=>h.fujimori_pct),borderColor:"#ff8c42",backgroundColor:"transparent",tension:.3},
+      {label:"Sánchez (real)",data:sRealPlot,borderColor:"#2ecc71",backgroundColor:"transparent",tension:.3,spanGaps:false},
+      {label:"Fujimori (real)",data:fRealPlot,borderColor:"#ff8c42",backgroundColor:"transparent",tension:.3,spanGaps:false},
+      {label:"Sánchez (proy.)",data:sProj,borderColor:"#2ecc71",borderDash:[6,4],backgroundColor:"transparent",pointStyle:"rectRot",pointRadius:5,spanGaps:true},
+      {label:"Fujimori (proy.)",data:fProj,borderColor:"#ff8c42",borderDash:[6,4],backgroundColor:"transparent",pointStyle:"rectRot",pointRadius:5,spanGaps:true},
     ]},
-    options:{ responsive:true, plugins:{legend:{labels:{color:"#e7e9ea"}}},
+    options:{ responsive:true,
+      plugins:{ legend:{labels:{color:"#e7e9ea",font:{size:10},boxWidth:14}},
+        tooltip:{callbacks:{title:(t)=>t[0].label==="PROY 100%"?"Proyección GEMSES al 100%":t[0].label}} },
       scales:{ x:{ticks:{color:"#8b98a5",maxRotation:45,font:{size:9}},grid:{color:"#1a2530"}},
-               y:{ticks:{color:"#8b98a5"},grid:{color:"#1a2530"},min:48,max:52}}}
+               y:{ticks:{color:"#8b98a5"},grid:{color:"#1a2530"},min:35,max:65}}},
+    plugins:[zonas]
   });
+}
+
+// ===== ESTIMACIÓN DE TIEMPO AL 100% (ETA) =====
+function calcularETA(d){
+  const hist=(d.historial||[]).filter(h=>h.actas!=null && h.ts);
+  const main=document.getElementById("eta-main");
+  const rate=document.getElementById("eta-rate");
+  const probDiv=document.getElementById("eta-prob");
+  if(hist.length<3){ main.textContent="Datos insuficientes"; return; }
+  // pares (tiempo en horas, actas%)
+  const t0=new Date(hist[0].ts).getTime();
+  const pts=hist.map(h=>({t:(new Date(h.ts).getTime()-t0)/3.6e6, a:h.actas}));
+  // tasa reciente: usar últimos min(6, n) puntos
+  const w=Math.min(6,pts.length);
+  const rec=pts.slice(-w);
+  // regresión lineal actas = b0 + b1*t
+  const n=rec.length, mt=rec.reduce((s,p)=>s+p.t,0)/n, ma=rec.reduce((s,p)=>s+p.a,0)/n;
+  let sxy=0,sxx=0; rec.forEach(p=>{sxy+=(p.t-mt)*(p.a-ma); sxx+=(p.t-mt)**2;});
+  let b1= sxx>0 ? sxy/sxx : 0;            // %/hora
+  const actual=pts[pts.length-1].a;
+  const restante=100-actual;
+  // variabilidad de la tasa (desviación de deltas)
+  const deltas=[]; for(let i=1;i<rec.length;i++){ const dt=rec[i].t-rec[i-1].t; if(dt>0) deltas.push((rec[i].a-rec[i-1].a)/dt); }
+  const mRate=deltas.length?deltas.reduce((s,x)=>s+x,0)/deltas.length:b1;
+  const sd=deltas.length>1?Math.sqrt(deltas.reduce((s,x)=>s+(x-mRate)**2,0)/(deltas.length-1)):Math.abs(mRate)*0.5;
+
+  rate.textContent="Ritmo reciente: "+(mRate>=0?"+":"")+mRate.toFixed(4)+" % actas/hora · faltan "+restante.toFixed(3)+"%";
+
+  if(mRate<=0.0005){
+    main.innerHTML="⏸️ El conteo está prácticamente <b>detenido</b> (actas observadas/JEE)";
+    main.style.color="#ff8c42";
+  } else {
+    const etaH=restante/mRate;
+    let txt;
+    if(etaH<24) txt=etaH.toFixed(1)+" horas";
+    else txt=(etaH/24).toFixed(1)+" días";
+    main.innerHTML="≈ "+txt+" al ritmo actual";
+    main.style.color="#fff";
+  }
+
+  // Monte Carlo: P(llegar al 100% en <24h / <3d / >3d)
+  let c24=0,c3d=0,cmas=0; const N=5000;
+  for(let i=0;i<N;i++){
+    const r=mRate + (Math.random()*2-1)*sd; // ritmo simulado
+    if(r<=0.0005){ cmas++; continue; }
+    const h=restante/r;
+    if(h<24) c24++; else if(h<72) c3d++; else cmas++;
+  }
+  const buckets=[
+    {l:"≤ 24 h", p:Math.round(100*c24/N), c:"#2ecc71"},
+    {l:"1–3 días", p:Math.round(100*c3d/N), c:"#d4af37"},
+    {l:"> 3 días / vía JNE", p:Math.round(100*cmas/N), c:"#ff8c42"},
+  ];
+  probDiv.innerHTML=buckets.map(b=>`<div style="flex:1;min-width:90px;background:#0f1720;border-radius:8px;padding:8px;text-align:center;border-top:3px solid ${b.c};">
+    <div style="font-size:18px;font-weight:800;color:${b.c};">${b.p}%</div>
+    <div style="font-size:10px;color:#8b98a5;">${b.l}</div></div>`).join("");
 }
 cargar();
 setInterval(cargar,5*60*1000);

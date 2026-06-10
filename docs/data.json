@@ -34,12 +34,12 @@
         "pct_validos": 63.363
       }
     },
-    "peru": {
+    "resto": {
       "sanchez": {
-        "pct_validos": 50.2
+        "pct_validos": 57.58
       },
       "fujimori": {
-        "pct_validos": 49.8
+        "pct_validos": 42.42
       }
     }
   },

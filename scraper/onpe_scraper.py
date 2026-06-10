@@ -105,8 +105,25 @@ def main():
     lima = parse_candidatos(get_totales(id_eleccion, "ubigeo_nivel_01", ubigeo="15"))
     # Extranjero (ambito geografico = 2)
     extranjero = parse_candidatos(get_totales(id_eleccion, "ambito_geografico", ambito="2"))
-    # Peru (ambito = 1) para derivar "resto del pais"
+    # Peru (ambito = 1) y Lima -> derivar "resto" (fuera de Lima)
     peru = parse_candidatos(get_totales(id_eleccion, "ambito_geografico", ambito="1"))
+
+    # Estimar "resto" = Peru nacional - Lima (en votos), para el modelo estratificado
+    resto = None
+    try:
+        if peru and lima and peru.get("sanchez") and lima.get("sanchez"):
+            ps, pf = peru["sanchez"], peru["fujimori"]
+            ls, lf = lima["sanchez"], lima["fujimori"]
+            rs_v = (ps.get("votos") or 0) - (ls.get("votos") or 0)
+            rf_v = (pf.get("votos") or 0) - (lf.get("votos") or 0)
+            tot = rs_v + rf_v
+            if tot > 0:
+                resto = {
+                    "sanchez": {"votos": rs_v, "pct_validos": round(100*rs_v/tot, 3)},
+                    "fujimori": {"votos": rf_v, "pct_validos": round(100*rf_v/tot, 3)},
+                }
+    except Exception as e:
+        print(f"  [warn] no se pudo derivar resto: {e}")
 
     snapshot = {
         "timestamp_iso": ts_iso,
@@ -116,6 +133,7 @@ def main():
         "lima": lima,
         "extranjero": extranjero,
         "peru": peru,
+        "resto": resto,
     }
 
     # Cargar historial existente
