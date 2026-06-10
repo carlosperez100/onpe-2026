@@ -1,31 +1,152 @@
 {
   "nacional": {
     "sanchez": {
-      "votos": 9016443,
-      "pct_validos": 50.024
+      "votos": 0,
+      "pct_validos": 0.0
     },
     "fujimori": {
-      "votos": 9007934,
-      "pct_validos": 49.976
+      "votos": 0,
+      "pct_validos": 0.0
     },
     "meta": {
-      "total_actas": 92766,
-      "pct_avance": "97.874"
+      "total_actas": 0,
+      "pct_avance": "0"
     }
   },
   "peru": null,
   "lima": null,
   "extranjero": null,
   "historial": [
-    {"ts": "2026-06-07T20:00:00", "hora": "07/06 20:00", "actas": 12.99, "sanchez_votos": null, "sanchez_pct": 47.503, "fujimori_votos": null, "fujimori_pct": 52.497, "brecha": null},
-    {"ts": "2026-06-08T00:06:00", "hora": "08/06 00:06", "actas": 74.795, "sanchez_votos": null, "sanchez_pct": 47.67, "fujimori_votos": null, "fujimori_pct": 52.33, "brecha": null},
-    {"ts": "2026-06-08T01:02:00", "hora": "08/06 01:02", "actas": 80.492, "sanchez_votos": 7470812, "sanchez_pct": 48.271, "fujimori_votos": 8006073, "fujimori_pct": 51.729, "brecha": -535261},
-    {"ts": "2026-06-08T01:50:00", "hora": "08/06 01:50", "actas": 87.653, "sanchez_votos": null, "sanchez_pct": 49.163, "fujimori_votos": null, "fujimori_pct": 50.837, "brecha": null},
-    {"ts": "2026-06-08T07:58:00", "hora": "08/06 07:58", "actas": 92.844, "sanchez_votos": 8701432, "sanchez_pct": 49.883, "fujimori_votos": 8742402, "fujimori_pct": 50.117, "brecha": -40970},
-    {"ts": "2026-06-08T08:32:00", "hora": "08/06 08:32", "actas": 93.03, "sanchez_votos": 8719223, "sanchez_pct": 49.911, "fujimori_votos": 8750166, "fujimori_pct": 50.089, "brecha": -30943},
-    {"ts": "2026-06-09T00:00:00", "hora": "09/06 00:00", "actas": 93.777, "sanchez_votos": 8778409, "sanchez_pct": 49.992, "fujimori_votos": 8781323, "fujimori_pct": 50.008, "brecha": -2914},
-    {"ts": "2026-06-09T12:00:00", "hora": "09/06 12:00", "actas": 96.335, "sanchez_votos": null, "sanchez_pct": 50.121, "fujimori_votos": null, "fujimori_pct": 49.879, "brecha": null},
-    {"ts": "2026-06-10T06:15:00", "hora": "10/06 06:15", "actas": 97.029, "sanchez_votos": 8980277, "sanchez_pct": 50.075, "fujimori_votos": 8953430, "fujimori_pct": 49.925, "brecha": 26847},
-    {"ts": "2026-06-10T14:12:00", "hora": "10/06 14:12", "actas": 97.874, "sanchez_votos": 9016443, "sanchez_pct": 50.024, "fujimori_votos": 9007934, "fujimori_pct": 49.976, "brecha": 8509}
+    {
+      "ts": "2026-06-07T20:00:00",
+      "hora": "07/06 20:00",
+      "actas": 12.99,
+      "sanchez_votos": null,
+      "sanchez_pct": 47.503,
+      "fujimori_votos": null,
+      "fujimori_pct": 52.497,
+      "brecha": null
+    },
+    {
+      "ts": "2026-06-08T00:06:00",
+      "hora": "08/06 00:06",
+      "actas": 74.795,
+      "sanchez_votos": null,
+      "sanchez_pct": 47.67,
+      "fujimori_votos": null,
+      "fujimori_pct": 52.33,
+      "brecha": null
+    },
+    {
+      "ts": "2026-06-08T01:02:00",
+      "hora": "08/06 01:02",
+      "actas": 80.492,
+      "sanchez_votos": 7470812,
+      "sanchez_pct": 48.271,
+      "fujimori_votos": 8006073,
+      "fujimori_pct": 51.729,
+      "brecha": -535261
+    },
+    {
+      "ts": "2026-06-08T01:50:00",
+      "hora": "08/06 01:50",
+      "actas": 87.653,
+      "sanchez_votos": null,
+      "sanchez_pct": 49.163,
+      "fujimori_votos": null,
+      "fujimori_pct": 50.837,
+      "brecha": null
+    },
+    {
+      "ts": "2026-06-08T07:58:00",
+      "hora": "08/06 07:58",
+      "actas": 92.844,
+      "sanchez_votos": 8701432,
+      "sanchez_pct": 49.883,
+      "fujimori_votos": 8742402,
+      "fujimori_pct": 50.117,
+      "brecha": -40970
+    },
+    {
+      "ts": "2026-06-08T08:32:00",
+      "hora": "08/06 08:32",
+      "actas": 93.03,
+      "sanchez_votos": 8719223,
+      "sanchez_pct": 49.911,
+      "fujimori_votos": 8750166,
+      "fujimori_pct": 50.089,
+      "brecha": -30943
+    },
+    {
+      "ts": "2026-06-09T00:00:00",
+      "hora": "09/06 00:00",
+      "actas": 93.777,
+      "sanchez_votos": 8778409,
+      "sanchez_pct": 49.992,
+      "fujimori_votos": 8781323,
+      "fujimori_pct": 50.008,
+      "brecha": -2914
+    },
+    {
+      "ts": "2026-06-09T12:00:00",
+      "hora": "09/06 12:00",
+      "actas": 96.335,
+      "sanchez_votos": null,
+      "sanchez_pct": 50.121,
+      "fujimori_votos": null,
+      "fujimori_pct": 49.879,
+      "brecha": null
+    },
+    {
+      "ts": "2026-06-10T06:15:00",
+      "hora": "10/06 06:15",
+      "actas": 97.029,
+      "sanchez_votos": 8980277,
+      "sanchez_pct": 50.075,
+      "fujimori_votos": 8953430,
+      "fujimori_pct": 49.925,
+      "brecha": 26847
+    },
+    {
+      "ts": "2026-06-10T14:12:00",
+      "hora": "10/06 14:12",
+      "actas": 97.874,
+      "sanchez_votos": 9016443,
+      "sanchez_pct": 50.024,
+      "fujimori_votos": 9007934,
+      "fujimori_pct": 49.976,
+      "brecha": 8509
+    },
+    {
+      "timestamp": "10/06/2026 18:54:59",
+      "sanchez_votos": 0,
+      "fujimori_votos": 0
+    }
+  ],
+  "meta": {
+    "ultima_actualizacion": "10/06/2026 18:54:59",
+    "fuente": "local_time"
+  },
+  "snapshots": [
+    {
+      "nacional": {
+        "sanchez": {
+          "votos": 0,
+          "pct_validos": 0.0
+        },
+        "fujimori": {
+          "votos": 0,
+          "pct_validos": 0.0
+        },
+        "meta": {
+          "total_actas": 0,
+          "pct_avance": "0"
+        }
+      },
+      "peru": null,
+      "lima": null,
+      "extranjero": null,
+      "timestamp_iso": "10/06/2026 18:54:59"
+    }
   ]
 }
