@@ -1,50 +1,21 @@
 {
-  "ultima_actualizacion": "10/06/2026 16:06:00 (datos actuales ONPE)",
-  "actual": {
-    "timestamp_legible": "10/06/2026 16:06:00",
-    "nacional": {
-      "sanchez": {
-        "votos": 9017771,
-        "pct_validos": 50.025
-      },
-      "fujimori": {
-        "votos": 9008686,
-        "pct_validos": 49.975
-      },
-      "meta": {
-        "actas_contabilizadas": 97.904,
-        "participacion": 68.474
-      }
+  "nacional": {
+    "sanchez": {
+      "votos": 0,
+      "pct_validos": 0
     },
-    "lima": {
-      "sanchez": {
-        "votos": 2267307,
-        "pct_validos": 36.501
-      },
-      "fujimori": {
-        "votos": 3944393,
-        "pct_validos": 63.499
-      }
+    "fujimori": {
+      "votos": 0,
+      "pct_validos": 0
     },
-    "extranjero": {
-      "sanchez": {
-        "votos": 92886,
-        "pct_validos": 36.632
-      },
-      "fujimori": {
-        "votos": 160679,
-        "pct_validos": 63.368
-      }
-    },
-    "resto": {
-      "sanchez": {
-        "pct_validos": 57.63
-      },
-      "fujimori": {
-        "pct_validos": 42.37
-      }
+    "meta": {
+      "total_actas": 0,
+      "pct_avance": "0"
     }
   },
+  "peru": null,
+  "lima": null,
+  "extranjero": null,
   "historial": [
     {
       "ts": "2026-06-07T20:00:00",
@@ -235,6 +206,37 @@
       "fujimori_votos": 9008686,
       "fujimori_pct": 49.975,
       "brecha": 9085
+    },
+    {
+      "timestamp": "10/06/2026 16:29:36",
+      "sanchez_votos": 0,
+      "fujimori_votos": 0
+    }
+  ],
+  "meta": {
+    "ultima_actualizacion": "10/06/2026 16:29:36",
+    "fuente": "onpe_html"
+  },
+  "snapshots": [
+    {
+      "nacional": {
+        "sanchez": {
+          "votos": 0,
+          "pct_validos": 0
+        },
+        "fujimori": {
+          "votos": 0,
+          "pct_validos": 0
+        },
+        "meta": {
+          "total_actas": 0,
+          "pct_avance": "0"
+        }
+      },
+      "peru": null,
+      "lima": null,
+      "extranjero": null,
+      "timestamp_iso": "10/06/2026 16:29:36"
     }
   ]
 }
