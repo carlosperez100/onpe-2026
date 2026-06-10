@@ -1,16 +1,16 @@
 {
   "nacional": {
     "sanchez": {
-      "votos": 0,
-      "pct_validos": 0.0
+      "votos": 9018491,
+      "pct_validos": 50.027
     },
     "fujimori": {
-      "votos": 0,
-      "pct_validos": 0.0
+      "votos": 9008798,
+      "pct_validos": 49.973
     },
     "meta": {
-      "total_actas": 0,
-      "pct_avance": "0"
+      "total_actas": 92766,
+      "pct_avance": "97.914"
     }
   },
   "peru": null,
