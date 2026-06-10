@@ -2,12 +2,12 @@ name: ONPE Scraper Horario
 
 on:
   schedule:
-    # Cada 15 minutos (UTC). Perú = UTC-5
-    - cron: '*/15 * * * *'
-  workflow_dispatch:        # Permite ejecutar manualmente desde la pestaña Actions
+    # Cada 15 minutos (UTC). Peru = UTC-5
+    - cron: '*/15 * * * *'  # Runs every 15 minutes
+  workflow_dispatch:      # Permite ejecutar manualmente desde la pestaña Actions
 
 permissions:
-  contents: write           # Para hacer commit de los datos actualizados
+  contents: write    # Para hacer commit de los datos actualizados
 
 jobs:
   scrape:
@@ -22,7 +22,10 @@ jobs:
           python-version: '3.11'
 
       - name: Instalar dependencias
-        run: pip install -r scraper/requirements.txt
+        run: |
+          pip install -r scraper/requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
 
       - name: Ejecutar scraper ONPE
         run: python scraper/onpe_scraper.py
@@ -35,6 +38,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "Sin cambios en los datos"
           else
-            git commit -m "data: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git commit -m "data: snapshot $(date -u +%Y-%m-%dT%H:%M:%S%z)"
             git push
           fi
