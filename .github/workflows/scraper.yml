@@ -2,41 +2,37 @@ name: ONPE Scraper Horario
 
 on:
   schedule:
-    # Cada 15 minutos (UTC). Peru = UTC-5
-    - cron: '*/15 * * * *'  # Runs every 15 minutes
-  workflow_dispatch:      # Permite ejecutar manualmente desde la pestaña Actions
+    - cron: '*/15 * * * *'  # Cada 15 minutos UTC
+  workflow_dispatch:  # Trigger manual desde Actions
 
 permissions:
-  contents: write    # Para hacer commit de los datos actualizados
-
+  contents: write
 jobs:
   scrape:
     runs-on: ubuntu-latest
+    
+    timeout-minutes: 10
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: /home/runner/work/.cache/ms-playwright  
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Instalar dependencias
+      - name: Install deps
         run: |
           pip install -r scraper/requirements.txt
           playwright install chromium
           playwright install-deps chromium
-
-      - name: Ejecutar scraper ONPE
+      - name: Run scraper
         run: python scraper/onpe_scraper.py
-
-      - name: Commit y push de datos
+      - name: Commit & push
         run: |
           git config user.name "onpe-bot"
           git config user.email "bot@users.noreply.github.com"
           git add docs/data.json
           if git diff --staged --quiet; then
-            echo "Sin cambios en los datos"
+            echo "No changes"
           else
             git commit -m "data: snapshot $(date -u +%Y-%m-%dT%H:%M:%S%z)"
             git push
