@@ -4,32 +4,26 @@ ONPE Scraper - Segunda Vuelta 2026
 Extrae totales nacionales, Lima y extranjero desde la API interna de ONPE.
 Requiere curl_cffi con impersonate de Chrome (ONPE bloquea requests normales).
 Guarda en docs/data.json para que el dashboard HTML lo consuma.
+Incluye fecha/hora original del API ONPE (NO del momento del scrape).
 """
 import json
 import os
+import re
 from datetime import datetime, timezone, timedelta
-
 from curl_cffi import requests as cffi
 
 BASE = "https://resultadosegundavuelta.onpe.gob.pe"
 IMPERSONATE = "chrome124"
 TIMEOUT = 30
-
-# Zona horaria Perú (UTC-5)
 PERU_TZ = timezone(timedelta(hours=-5))
-
 DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "docs", "data.json")
 
-
 def get_raw(url):
-    """GET con fingerprint de Chrome. Devuelve (status, texto)."""
     r = cffi.get(url, impersonate=IMPERSONATE, timeout=TIMEOUT,
                  headers={"Accept": "application/json, text/plain, */*"})
     return r.status_code, r.text
 
-
 def get(url):
-    """GET que parsea JSON. Lanza error claro si no es JSON."""
     status, text = get_raw(url)
     snippet = (text or "")[:200].replace("\n", " ")
     if status != 200:
@@ -42,9 +36,25 @@ def get(url):
         raise RuntimeError(f"No es JSON ({url}). ONPE devolvio: {snippet}")
     return body.get("data", body) if isinstance(body, dict) else body
 
+def get_original_timestamp():
+    """Extrae la fecha/hora original del API ONPE desde el HTML.
+    La pagina muestra 'ACTUALIZADO AL DD/MM/YYYY A LAS HH:MM:SS p.m.'
+    Devuelve la fecha original en formato legible, o None si falla.
+    """
+    resumen_url = f"{BASE}/main/resumen"
+    status, text = get_raw(resumen_url)
+    if status != 200 or not text:
+        return None
+    # Buscar patron: ACTUALIZADO AL DD/MM/YYYY A LAS HH:MM:SS a./p. m.
+    patron = r"ACTUALIZADO AL (\d{2}/\d{2}/\d{4}) A LAS (\d{1,2}:\d{2}:\d{2}) (a\.?m\.?|p\.?m\.?)"
+    match = re.search(patron, text)
+    if match:
+        fecha, hora, ampm = match.groups()
+        ampm = ampm.strip().lower().replace(".", "")
+        return f"{fecha} {hora} {ampm}"
+    return None
 
 def get_id_eleccion():
-    """Detecta la eleccion activa probando varios endpoints conocidos."""
     candidatos_url = [
         f"{BASE}/presentacion-backend/proceso/proceso-electoral-activo",
         f"{BASE}/presentacion-backend/proceso/activo",
@@ -61,18 +71,17 @@ def get_id_eleccion():
             elif isinstance(data, list) and data:
                 idv = data[0].get("idEleccion") or data[0].get("id_eleccion") or data[0].get("id")
             if idv:
-                print(f"  [ok] idEleccion={idv} via {url}")
+                print(f" [ok] idEleccion={idv} via {url}")
                 return idv
         except Exception as e:
             ultimo_error = e
-            print(f"  [intento] {url} -> {e}")
+            print(f" [intento] {url} -> {e}")
     raise RuntimeError(f"No se pudo detectar idEleccion. Ultimo error: {ultimo_error}")
 
-
 def get_totales(id_eleccion, tipo_filtro="eleccion", ubigeo=None, ambito=None):
-    """Obtiene totales por candidato segun filtro geografico, probando rutas."""
     bases = [
         f"{BASE}/presentacion-backend/candidatos/totales",
+        f"{BASE}/presentacion-backend/resumen-general/totales",
         f"{BASE}/presentacion-backend/totales/candidatos",
         f"{BASE}/api/candidatos/totales",
     ]
@@ -86,13 +95,11 @@ def get_totales(id_eleccion, tipo_filtro="eleccion", ubigeo=None, ambito=None):
         try:
             return get(b + qs)
         except Exception as e:
-            print(f"  [intento totales {tipo_filtro}] {b} -> {e}")
-    print(f"  [warn] sin datos para {tipo_filtro}")
+            print(f" [intento totales {tipo_filtro}] {b} -> {e}")
+    print(f" [warn] sin datos para {tipo_filtro}")
     return None
 
-
 def parse_candidatos(data):
-    """Normaliza la respuesta de candidatos a {sanchez, fujimori, meta}."""
     if not data:
         return None
     candidatos = data if isinstance(data, list) else data.get("candidatos", [])
@@ -106,11 +113,10 @@ def parse_candidatos(data):
             "pct_emitidos": c.get("porcentajeVotosEmitidos"),
             "candidato": c.get("nombreCandidato") or c.get("candidato"),
         }
-        if "JUNTOS" in nombre or "SANCHEZ" in nombre or "SÁNCHEZ" in nombre:
+        if "JUNTOS" in nombre or "SANCHEZ" in nombre or "SANCHEZ" in nombre:
             out["sanchez"] = registro
         elif "FUERZA" in nombre or "FUJIMORI" in nombre:
             out["fujimori"] = registro
-        # Metadatos comunes
         if c.get("actasContabilizadas"):
             meta["actas_contabilizadas"] = c.get("actasContabilizadas")
         if c.get("totalActas"):
@@ -120,32 +126,37 @@ def parse_candidatos(data):
     out["meta"] = meta
     return out
 
-
 def main():
+    # Primera tarea: obtener la fecha/hora ORIGINAL del API
+    ts_onpe_original = get_original_timestamp()
+    print(f"[API ONPE] Timestamp original: {ts_onpe_original or '(no detectado)'}")
+
     ahora = datetime.now(PERU_TZ)
     ts_iso = ahora.isoformat()
     ts_legible = ahora.strftime("%d/%m/%Y %H:%M:%S")
 
-    print(f"[{ts_legible}] Iniciando captura ONPE...")
+    # Si ONPE tiene timestamp original, usarlo; sino, usar el del scrape
+    if ts_onpe_original:
+        ts_final = ts_onpe_original
+    else:
+        ts_final = ts_legible
+
+    print(f"[{ts_final}] Iniciando captura ONPE...")
+
     try:
         id_eleccion = get_id_eleccion()
     except Exception as e:
-        # ONPE no respondio JSON: NO romper el workflow ni borrar data.json
-        print(f"  [AVISO] ONPE no entrego datos: {e}")
-        print("  [AVISO] Se conserva el data.json actual. El dashboard sigue mostrando el ultimo dato bueno.")
-        return  # salida limpia (exit 0)
-    print(f"  idEleccion = {id_eleccion}")
+        print(f" [AVISO] ONPE no entrego datos: {e}")
+        print(" [AVISO] Se conserva el data.json actual.")
+        return
 
-    # Nacional
+    print(f" idEleccion = {id_eleccion}")
+
     nacional = parse_candidatos(get_totales(id_eleccion, "eleccion"))
-    # Lima (ubigeo departamento = 15)
     lima = parse_candidatos(get_totales(id_eleccion, "ubigeo_nivel_01", ubigeo="15"))
-    # Extranjero (ambito geografico = 2)
     extranjero = parse_candidatos(get_totales(id_eleccion, "ambito_geografico", ambito="2"))
-    # Peru (ambito = 1) y Lima -> derivar "resto" (fuera de Lima)
     peru = parse_candidatos(get_totales(id_eleccion, "ambito_geografico", ambito="1"))
 
-    # Estimar "resto" = Peru nacional - Lima (en votos), para el modelo estratificado
     resto = None
     try:
         if peru and lima and peru.get("sanchez") and lima.get("sanchez"):
@@ -160,11 +171,12 @@ def main():
                     "fujimori": {"votos": rf_v, "pct_validos": round(100*rf_v/tot, 3)},
                 }
     except Exception as e:
-        print(f"  [warn] no se pudo derivar resto: {e}")
+        print(f" [warn] no se pudo derivar resto: {e}")
 
     snapshot = {
         "timestamp_iso": ts_iso,
         "timestamp_legible": ts_legible,
+        "timestamp_original_onpe": ts_onpe_original,
         "id_eleccion": id_eleccion,
         "nacional": nacional,
         "lima": lima,
@@ -173,7 +185,6 @@ def main():
         "resto": resto,
     }
 
-    # Cargar historial existente
     historial = []
     if os.path.exists(DATA_FILE):
         try:
@@ -183,8 +194,17 @@ def main():
         except Exception:
             historial = []
 
-    # Agregar snapshot al historial (nacional resumido)
-    if nacional and nacional.get("sanchez") and nacional.get("fujimori"):
+    # Evitar duplicados consecutivos con los mismos votos
+    skip_historial = False
+    if historial and nacional and nacional.get("sanchez") and nacional.get("fujimori"):
+        ultimo = historial[-1]
+        s_v = nacional["sanchez"].get("votos")
+        f_v = nacional["fujimori"].get("votos")
+        if (ultimo.get("sanchez_votos") == s_v and ultimo.get("fujimori_votos") == f_v):
+            skip_historial = True
+            print(" [info] Datos sin cambios respecto al ultimo registro. No se agrega al historial.")
+
+    if nacional and nacional.get("sanchez") and nacional.get("fujimori") and not skip_historial:
         s = nacional["sanchez"]
         fj = nacional["fujimori"]
         brecha = None
@@ -192,7 +212,7 @@ def main():
             brecha = s["votos"] - fj["votos"]
         historial.append({
             "ts": ts_iso,
-            "hora": ts_legible,
+            "hora": ts_final,
             "actas": nacional.get("meta", {}).get("actas_contabilizadas"),
             "sanchez_votos": s.get("votos"),
             "sanchez_pct": s.get("pct_validos"),
@@ -200,20 +220,19 @@ def main():
             "fujimori_pct": fj.get("pct_validos"),
             "brecha": brecha,
         })
+    elif not skip_historial:
+        print(" [warn] no se pudo parsear candidatos nacionales")
 
     salida = {
-        "ultima_actualizacion": ts_legible,
+        "ultima_actualizacion": ts_final,
         "actual": snapshot,
         "historial": historial,
     }
-
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, indent=2)
-
-    print(f"  Guardado en {DATA_FILE} ({len(historial)} registros historicos)")
-    print("  OK")
-
+    print(f" Guardado en {DATA_FILE} ({len(historial)} registros historicos)")
+    print(" OK")
 
 if __name__ == "__main__":
     main()
