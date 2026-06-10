@@ -15,6 +15,28 @@ data_dir = os.path.join(os.path.dirname(__file__), "..", "docs")
 DATA_FILE = os.path.join(data_dir, "data.json")
 PERU_TZ = timezone(timedelta(hours=-5))
 
+def get_text_by_regex(soup, pattern):
+    """Finds text in soup that matches a regex pattern."""
+    matches = soup.find_all(string=re.compile(pattern))
+    for m in matches:
+        return str(m).strip()
+    return None
+
+def extract_number(text, pattern):
+    """Extracts a number from text matching pattern, returns int or float."""
+    m = re.search(pattern, text)
+    if m:
+        val = m.group(1).replace("'", "").replace(",", "").replace(".", "")
+        return int(val) if re.match(r"^\d+$", val) else float(val)
+    return 0
+
+def extract_decimal(text, pattern):
+    """Extracts a decimal number from text matching pattern."""
+    m = re.search(pattern, text)
+    if m:
+        return float(m.group(1))
+    return 0.0
+
 def scrape_onpe():
     """Scrapes ONPE results page using Playwright headless + BeautifulSoup."""
     from playwright.sync_api import sync_playwright
@@ -34,82 +56,89 @@ def scrape_onpe():
         
         try:
             page.goto(URL, timeout=60000, wait_until="networkidle")
-            page.wait_for_timeout(8000)  # wait for JS to fully render
+            page.wait_for_timeout(10000)
             html = page.content()
         finally:
             browser.close()
     
-    # Parse with BeautifulSoup
     soup = BeautifulSoup(html, "html.parser")
+    text_all = soup.get_text(separator="\n")
     
     print("[PARSER] HTML recibido, buscando datos...")
     print(f"[PARSER] Longitud HTML: {len(html)} chars")
     
-    # 1. Extract timestamp - look for "ACTUALIZADO AL"
-    for el in soup.find_all(string=True):
-        if "ACTUALIZADO AL" in str(el).upper():
-            ts_text = str(el).strip()
-            timestamp_onpe = ts_text
-            print(f" [API ONPE] Timestamp original: {timestamp_onpe}")
-            break
+    # 1. Timestamp: ACTUALIZADO AL
+    ts_text = get_text_by_regex(soup, r"ACTUALIZADO AL")
+    if ts_text:
+        timestamp_onpe = ts_text
+        print(f" [ONPE] Timestamp: {timestamp_onpe}")
     
-    # 2. Extract advance percentage - look for pattern like "X.X %"
+    # 2. % actas (e.g. "97.910 %")
+    pct_text = get_text_by_regex(soup, r"\d+\.\d{3}\s+%")
     pct_avance = "0"
-    text = soup.get_text()
-    m = re.search(r"(\d+\.\d+)\s*%", text)
-    if m:
-        pct_avance = m.group(1)
+    if pct_text:
+        m = re.search(r"(\d+\.\d{3})\s*%", pct_text)
+        if m:
+            pct_avance = m.group(1)
+        print(f" [ONPE] Avance actas: {pct_avance}%")
     
-    # 3. Extract total actas
+    # 3. Total actas
+    actas_text = get_text_by_regex(soup, r"Total de actas")
     total_actas = 0
-    m = re.search(r"Total de actas:\s*([\d,]+)", text)
-    if m:
-        total_actas = int(m.group(1).replace(",", ""))
+    if actas_text:
+        m = re.search(r"Total de actas:\s*([\d,]+)", actas_text)
+        if m:
+            total_actas = int(m.group(1).replace(",", ""))
+        print(f" [ONPE] Total actas: {total_actas}")
     
-    # 4. Extract Sanchez votes and percentage
+    # 4. Sanchez: nombre y votos
     sanchez_votos = 0
     sanchez_pct = 0.0
-    
-    # Look for Sanchez percentage in text (should be ~5X.X%)
-    # ONPE shows it as percentage like 50.X%
+    s_nome = get_text_by_regex(soup, r"ROBERTO.*SANCHEZ")
+    if s_nome:
+        print(f" [ONPE] Sanchez nombre: {s_nome}")
+    s_voto = get_text_by_regex(soup, r"\d[\d\',]+\s+votos")
+    if s_voto:
+        sanchez_votos = extract_number(s_voto, r"(\d[\d\',]+)")
+        print(f" [ONPE] Sanchez votos texto: {s_voto}")
+    # Buscar porcentaje de Sanchez ( empieza con 5X.XXX%)
     for el in soup.find_all(string=True):
         s = str(el).strip()
-        m_pct = re.search(r"(5\d\.\d+)\s*%", s)
-        if m_pct:
-            sanchez_pct = float(m_pct.group(1))
+        m = re.search(r"(5[0-9]\.\d{3})\s*%", s)
+        if m:
+            sanchez_pct = float(m.group(1))
+            print(f" [ONPE] Sanchez pct: {sanchez_pct}%")
             break
     
-    # Look for Sanchez votes
-    for el in soup.find_all(string=True):
-        s = str(el)
-        if "ROBERTO" in s.upper() or "SANCHEZ" in s.upper():
-            m_v = re.search(r"(\d[\d\',\u2019]+(?:\.\d+)?)", s)
-            if m_v:
-                num_str = m_v.group(1).replace("'", "").replace(",", "").replace("\u2019", "")
-                sanchez_votos = int(re.sub(r"[^0-9]", "", num_str))
-                break
-    
-    # 5. Extract Fujimori votes and percentage  
+    # 5. Fujimori: nombre y votos
     fujimori_votos = 0
     fujimori_pct = 0.0
-    
+    f_nome = get_text_by_regex(soup, r"KEIKO.*FUJIMORI")
+    if f_nome:
+        print(f" [ONPE] Fujimori nombre: {f_nome}")
+    # Fujimori votos: el texto "X'XXX,XXX votos" seguido de Fujimori
+    f_voto = get_text_by_regex(soup, r"\d[\d\',]+\s+votos")
+    # Ya extrajimos el primero como Sanchez, necesitamos el segundo que es Fujimori
+    votos_all = soup.find_all(string=re.compile(r"\d[\d\',]+\s+votos"))
+    if len(votos_all) >= 2:
+        f_voto = str(votos_all[1]).strip()
+        fujimori_votos = extract_number(f_voto, r"(\d[\d\',]+)")
+        print(f" [ONPE] Fujimori votos texto: {f_voto}")
+    elif len(votos_all) == 1:
+        # Solo hay un match, es el segundo candidato
+        f_voto = str(votos_all[0]).strip()
+        fujimori_votos = extract_number(f_voto, r"(\d[\d\',]+)")
+        print(f" [ONPE] Fujimori votos texto: {f_voto}")
+    # Porcentaje Fujimori (empieza con 4X.XXX%)
     for el in soup.find_all(string=True):
         s = str(el).strip()
-        m_pct = re.search(r"(4\d\.\d+)\s*%", s)
-        if m_pct:
-            fujimori_pct = float(m_pct.group(1))
+        m = re.search(r"(4[0-9]\.\d{3})\s*%", s)
+        if m:
+            fujimori_pct = float(m.group(1))
+            print(f" [ONPE] Fujimori pct: {fujimori_pct}%")
             break
     
-    for el in soup.find_all(string=True):
-        s = str(el)
-        if "KEIKO" in s.upper() or "FUJIMORI" in s.upper():
-            m_v = re.search(r"(\d[\d\',\u2019]+(?:\.\d+)?)", s)
-            if m_v:
-                num_str = m_v.group(1).replace("'", "").replace(",", "").replace("\u2019", "")
-                fujimori_votos = int(re.sub(r"[^0-9]", "", num_str))
-                break
-    
-    print(f" [NACIONAL] Sanchez: {sanchez_votos} ({sanchez_pct}%)")
+    print(f"\n [NACIONAL] Sanchez: {sanchez_votos} ({sanchez_pct}%)")
     print(f" [NACIONAL] Fujimori: {fujimori_votos} ({fujimori_pct}%)")
     print(f" [NACIONAL] Actas: {total_actas} ({pct_avance}%)")
     
@@ -147,7 +176,7 @@ def load_existing():
     }
 
 def save_data(nacional_data, ts_onpe):
-    """Saves data.json with history, deduplication."""
+    """Saves data.json with history and deduplication."""
     existing = load_existing()
     historial = existing.get("historial", [])
     snapshots = existing.get("snapshots", [])
@@ -166,6 +195,12 @@ def save_data(nacional_data, ts_onpe):
             print(f" [HISTORIAL] Sin cambios: {ultimo.get('timestamp')}")
     
     if nuevo:
+        hist_entry = {
+            "timestamp": ts_final,
+            "sanchez_votos": sanchez_votos,
+            "fujimori_votos": fujimori_votos,
+        }
+        historial.append(hist_entry)
         snapshot = {
             "nacional": nacional_data,
             "peru": existing.get("peru"),
@@ -173,11 +208,6 @@ def save_data(nacional_data, ts_onpe):
             "extranjero": existing.get("extranjero"),
             "timestamp_iso": ts_final,
         }
-        historial.append({
-            "timestamp": ts_final,
-            "sanchez_votos": sanchez_votos,
-            "fujimori_votos": fujimori_votos,
-        })
         snapshots.append(snapshot)
         print(f" [HISTORIAL] Nuevo snapshot guardado ({len(historial)} en historial)")
     
