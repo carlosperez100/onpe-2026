@@ -265,6 +265,26 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
   <div class="empate-callout" id="empate-note"></div>
 </div>
 
+<!-- ─── ETA: ESTIMACIÓN DE CIERRE DEL CONTEO ─────────────────── -->
+<div id="eta-card" style="
+    margin:0 14px 14px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;">
+  <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+              color:var(--muted);font-weight:700;margin-bottom:10px;">
+    ⏱️ Estimación de cierre del conteo (100% de actas)
+  </div>
+  <div id="eta-main" style="font-size:clamp(18px,4vw,26px);font-weight:900;
+                             color:#fff;margin-bottom:4px;">Calculando…</div>
+  <div id="eta-rate" style="font-size:12px;color:#aab8c2;margin-bottom:10px;"></div>
+  <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">
+    Probabilidad de alcanzar el 100%:
+  </div>
+  <div id="eta-prob" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+</div>
+
 <!-- ─── TABLA ESTRATOS ───────────────────────────────────────── -->
 <div class="strat-card">
   <div class="strat-title">Resultados por Estrato Geográfico</div>
@@ -509,11 +529,99 @@ function render(d) {
       "). No es posible declarar ganador con certeza estadística."
     : "";
 
+  // ── ETA cierre del conteo ──
+  calcularETA(d);
+
   // ── Tabla de estratos ──
   renderStratos(d);
 
   // ── Gráfico evolución ──
   renderChart(d, peS, peF);
+}
+
+// ─── ETA: ESTIMACIÓN DE CIERRE DEL CONTEO ───────────────────
+function calcularETA(d) {
+  const hist     = (d.historial || []).filter(h => h.actas != null && h.ts);
+  const elMain   = document.getElementById("eta-main");
+  const elRate   = document.getElementById("eta-rate");
+  const elProb   = document.getElementById("eta-prob");
+  if (!elMain) return;
+
+  if (hist.length < 3) {
+    elMain.textContent = "Datos insuficientes para estimar";
+    return;
+  }
+
+  // Convertir historial a puntos (horas desde t0, % actas)
+  const t0  = new Date(hist[0].ts).getTime();
+  const pts  = hist.map(h => ({
+    t: (new Date(h.ts).getTime() - t0) / 3_600_000,
+    a: h.actas,
+  }));
+
+  // Usar los últimos 6 puntos para la tasa reciente
+  const rec = pts.slice(-Math.min(6, pts.length));
+  const n   = rec.length;
+  const mt  = rec.reduce((s, p) => s + p.t, 0) / n;
+  const ma  = rec.reduce((s, p) => s + p.a, 0) / n;
+  let sxy = 0, sxx = 0;
+  rec.forEach(p => { sxy += (p.t - mt) * (p.a - ma); sxx += (p.t - mt) ** 2; });
+  const b1OLS = sxx > 0 ? sxy / sxx : 0;  // % actas / hora (OLS)
+
+  // Tasa promedio de deltas consecutivos
+  const deltas = [];
+  for (let i = 1; i < rec.length; i++) {
+    const dt = rec[i].t - rec[i - 1].t;
+    if (dt > 0) deltas.push((rec[i].a - rec[i - 1].a) / dt);
+  }
+  const mRate = deltas.length
+    ? deltas.reduce((s, x) => s + x, 0) / deltas.length
+    : b1OLS;
+  const sd = deltas.length > 1
+    ? Math.sqrt(deltas.reduce((s, x) => s + (x - mRate) ** 2, 0) / (deltas.length - 1))
+    : Math.abs(mRate) * 0.5;
+
+  const actual   = pts[pts.length - 1].a;
+  const restante = 100 - actual;
+
+  elRate.textContent =
+    "Ritmo reciente: " + (mRate >= 0 ? "+" : "") + mRate.toFixed(4) +
+    " % actas/hora · faltan " + restante.toFixed(3) + "%";
+
+  if (mRate <= 0.0005) {
+    elMain.innerHTML = "⏸️ El conteo está prácticamente <b>detenido</b> (actas observadas / JEE)";
+    elMain.style.color = "#ff8c42";
+  } else {
+    const etaH = restante / mRate;
+    const txt  = etaH < 24
+      ? etaH.toFixed(1) + " horas"
+      : (etaH / 24).toFixed(1) + " días";
+    elMain.innerHTML  = "≈ <b>" + txt + "</b> al ritmo actual";
+    elMain.style.color = "#fff";
+  }
+
+  // Monte Carlo para probabilidades de cierre
+  const N = 5_000;
+  let c24 = 0, c3d = 0, cmas = 0;
+  for (let i = 0; i < N; i++) {
+    const r = mRate + (Math.random() * 2 - 1) * sd;
+    if (r <= 0.0005) { cmas++; continue; }
+    const h = restante / r;
+    if (h < 24) c24++;
+    else if (h < 72) c3d++;
+    else cmas++;
+  }
+  const buckets = [
+    { l: "≤ 24 h",            p: Math.round(100 * c24  / N), c: "#2ecc71" },
+    { l: "1–3 días",           p: Math.round(100 * c3d  / N), c: "#d4af37" },
+    { l: "> 3 días / vía JNE", p: Math.round(100 * cmas / N), c: "#ff8c42" },
+  ];
+  elProb.innerHTML = buckets.map(b => `
+    <div style="flex:1;min-width:80px;background:#0f1720;border-radius:10px;
+                padding:10px 8px;text-align:center;border-top:3px solid ${b.c};">
+      <div style="font-size:22px;font-weight:900;color:${b.c};">${b.p}%</div>
+      <div style="font-size:10px;color:#8b98a5;margin-top:2px;">${b.l}</div>
+    </div>`).join("");
 }
 
 // ─── TABLA ESTRATOS ─────────────────────────────────────────
