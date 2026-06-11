@@ -556,8 +556,10 @@ function render(d) {
   // ── Tabla de estratos ──
   renderStratos(d);
 
-  // ── Gráfico evolución ──
-  renderChart(d, peS, peF);
+  // ── Gráfico evolución — usa estratificado si existe, sino univariado ──
+  const chartS = peS != null ? peS : puS;
+  const chartF = peF != null ? peF : puF;
+  renderChart(d, chartS, chartF);
 }
 
 // ─── ETA: ESTIMACIÓN DE CIERRE DEL CONTEO ───────────────────
