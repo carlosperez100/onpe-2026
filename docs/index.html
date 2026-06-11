@@ -789,14 +789,18 @@ function renderChart(d, peS, peF) {
 }
 
 function drawChart(labels, sReal, fReal, sProj, fProj) {
-  // ── Rango Y dinámico y proporcional ──
-  const allVals = [...sReal, ...fReal, ...(sProj||[]), ...(fProj||[])].filter(v => v != null);
-  const minVal  = Math.min(...allVals);
-  const maxVal  = Math.max(...allVals);
-  const pad     = 0.6;
-  // Redondear a 0.5 más próximo para ejes limpios
-  const yMin = Math.floor((minVal - pad) * 2) / 2;
-  const yMax = Math.ceil ((maxVal + pad) * 2) / 2;
+  // ── Rango Y: usa últimos 7 puntos reales + proyección para zoom en zona competida ──
+  const recN    = 7;
+  const sRec    = sReal.filter(v => v != null).slice(-recN);
+  const fRec    = fReal.filter(v => v != null).slice(-recN);
+  const projV   = [...(sProj||[]), ...(fProj||[])].filter(v => v != null);
+  const zoomV   = [...sRec, ...fRec, ...projV];
+  const minVal  = Math.min(...zoomV);
+  const maxVal  = Math.max(...zoomV);
+  const pad     = 0.25;
+  // Redondear a 0.25 más próximo para ejes finos
+  const yMin = Math.floor((minVal - pad) * 4) / 4;
+  const yMax = Math.ceil ((maxVal + pad) * 4) / 4;
 
   // ── Plugin: zonas de color + etiqueta fuente ──
   const zonas = {
@@ -921,10 +925,11 @@ function drawChart(labels, sReal, fReal, sProj, fProj) {
         y: {
           min: yMin,
           max: yMax,
+          clip: false,
           ticks: {
             color: "#8b98a5",
-            stepSize: 0.5,
-            callback: v => v.toFixed(1) + "%",
+            stepSize: 0.25,
+            callback: v => v.toFixed(2) + "%",
           },
           grid: { color: "#1a2530" },
         },
