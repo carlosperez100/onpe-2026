@@ -1,86 +1,46 @@
 {
-  "meta": {
-    "ultima_actualizacion": "11/06/2026 08:20:26 A. M.",
-    "pct_avance": 98.216,
-    "actas_contabilizadas": 91111,
-    "actas_totales": 92766,
-    "fuente": "onpe_html"
-  },
-  "nacional": {
-    "pct_avance": 98.216,
-    "actas_contabilizadas": 91111,
-    "actas_totales": 92766,
-    "votos_validos": 18064745,
-    "sanchez": {
-      "votos": 9032092,
-      "pct_validos": 49.998
-    },
-    "fujimori": {
-      "votos": 9032653,
-      "pct_validos": 50.002
-    }
-  },
-  "lima": {
-    "sanchez": {
-      "votos": 2267388,
-      "pct_validos": 36.5
-    },
-    "fujimori": {
-      "votos": 3944554,
-      "pct_validos": 63.5
-    },
-    "votos_validos": 6211942,
-    "actas_contabilizadas": 28333,
-    "actas_totales": 29247,
-    "pct_avance": 96.875
-  },
-  "resto": {
-    "sanchez": {
-      "votos": 6658366,
-      "pct_validos": 57.588
-    },
-    "fujimori": {
-      "votos": 4903664,
-      "pct_validos": 42.412
-    },
-    "votos_validos": 11562030,
-    "pct_avance": 99.014
-  },
-  "extranjero": {
-    "sanchez": {
-      "votos": 106338,
-      "pct_validos": 36.571
-    },
-    "fujimori": {
-      "votos": 184435,
-      "pct_validos": 63.429
-    },
-    "votos_validos": 290773,
-    "actas_contabilizadas": 2403,
-    "actas_totales": 2543,
-    "pct_avance": 94.495
-  },
-  "proyeccion": {
-    "univariado": {
-      "sanchez_pct": 49.882,
-      "fujimori_pct": 50.118,
-      "ic_inf": 48.590,
-      "ic_sup": 51.174,
-      "r2": 0.657
-    },
-    "estratificado": {
-      "sanchez_pct": 49.893,
-      "fujimori_pct": 50.107,
-      "ic_inf": 49.355,
-      "ic_sup": 50.431,
-      "prob_sanchez": 34.8,
-      "prob_fujimori": 65.2,
-      "pesos": {
-        "lima": 34.85,
-        "resto": 63.47,
-        "extranjero": 1.67
+  "ultima_actualizacion": "11/06 04:55 (desde ONPE)",
+  "actual": {
+    "timestamp_legible": "10/06/2026 13:35:00",
+    "nacional": {
+      "sanchez": {
+        "votos": 9013284,
+        "pct_validos": 50.218
       },
-      "n_sim": 20000
+      "fujimori": {
+        "votos": 9007157,
+        "pct_validos": 49.782
+      },
+      "meta": {
+        "actas_contabilizadas": 98.346,
+        "participacion": 68.474
+      }
+    },
+    "lima": {
+      "sanchez": {
+        "pct_validos": 36.503
+      },
+      "fujimori": {
+        "pct_validos": 63.497
+      }
+    },
+    "extranjero": {
+      "sanchez": {
+        "votos": 92778,
+        "pct_validos": 36.571
+      },
+      "fujimori": {
+        "votos": 160461,
+        "pct_validos": 63.429
+      }
+    },
+    "resto": {
+      "sanchez": {
+        "pct_validos": 57.58
+      },
+      "fujimori": {
+        "pct_validos": 42.42
+      }
     }
   },
   "historial": [
@@ -145,24 +105,84 @@
       "brecha": -30943
     },
     {
-      "ts": "2026-06-09T00:00:00",
-      "hora": "09/06 00:00",
-      "actas": 93.777,
-      "sanchez_votos": 8778409,
-      "sanchez_pct": 49.992,
-      "fujimori_votos": 8781323,
-      "fujimori_pct": 50.008,
-      "brecha": -2914
+      "ts": "2026-06-08T11:00:00",
+      "hora": "08/06 11:00",
+      "actas": 93.654,
+      "sanchez_votos": 8770141,
+      "sanchez_pct": 49.981,
+      "fujimori_votos": 8776702,
+      "fujimori_pct": 50.019,
+      "brecha": -6561
     },
     {
-      "ts": "2026-06-09T12:00:00",
-      "hora": "09/06 12:00",
-      "actas": 96.335,
+      "ts": "2026-06-08T13:42:00",
+      "hora": "08/06 13:42",
+      "actas": 94.075,
+      "sanchez_votos": 8803745,
+      "sanchez_pct": 50.029,
+      "fujimori_votos": 8793466,
+      "fujimori_pct": 49.971,
+      "brecha": 10279
+    },
+    {
+      "ts": "2026-06-08T17:56:00",
+      "hora": "08/06 17:56",
+      "actas": 94.859,
       "sanchez_votos": null,
-      "sanchez_pct": 50.121,
+      "sanchez_pct": 50.099,
       "fujimori_votos": null,
-      "fujimori_pct": 49.879,
+      "fujimori_pct": 49.901,
       "brecha": null
+    },
+    {
+      "ts": "2026-06-09T12:30:00",
+      "hora": "09/06 12:30",
+      "actas": 96.024,
+      "sanchez_votos": 8914029,
+      "sanchez_pct": 50.057,
+      "fujimori_votos": 8893751,
+      "fujimori_pct": 49.943,
+      "brecha": 20278
+    },
+    {
+      "ts": "2026-06-09T13:00:00",
+      "hora": "09/06 13:00",
+      "actas": 96.273,
+      "sanchez_votos": 8943863,
+      "sanchez_pct": 50.118,
+      "fujimori_votos": 8901653,
+      "fujimori_pct": 49.882,
+      "brecha": 42210
+    },
+    {
+      "ts": "2026-06-09T19:56:00",
+      "hora": "09/06 19:56",
+      "actas": 96.412,
+      "sanchez_votos": null,
+      "sanchez_pct": 50.116,
+      "fujimori_votos": null,
+      "fujimori_pct": 49.884,
+      "brecha": null
+    },
+    {
+      "ts": "2026-06-10T00:12:00",
+      "hora": "10/06 00:12",
+      "actas": 96.871,
+      "sanchez_votos": 8943462,
+      "sanchez_pct": 49.912,
+      "fujimori_votos": 8975165,
+      "fujimori_pct": 50.088,
+      "brecha": -31703
+    },
+    {
+      "ts": "2026-06-10T03:05:00",
+      "hora": "10/06 03:05",
+      "actas": 97.012,
+      "sanchez_votos": 8978779,
+      "sanchez_pct": 50.071,
+      "fujimori_votos": 8953387,
+      "fujimori_pct": 49.929,
+      "brecha": 25392
     },
     {
       "ts": "2026-06-10T06:15:00",
@@ -175,34 +195,48 @@
       "brecha": 26847
     },
     {
-      "ts": "2026-06-10T14:12:00",
-      "hora": "10/06 14:12",
-      "actas": 97.874,
-      "sanchez_votos": 9016443,
-      "sanchez_pct": 50.024,
-      "fujimori_votos": 9007934,
-      "fujimori_pct": 49.976,
-      "brecha": 8509
+      "ts": "2026-06-10T10:06:00",
+      "hora": "10/06 10:06",
+      "actas": 97.634,
+      "sanchez_votos": 9006833,
+      "sanchez_pct": 50.035,
+      "fujimori_votos": 8994393,
+      "fujimori_pct": 49.965,
+      "brecha": 12440
     },
     {
-      "ts": "2026-06-10T20:01:49",
-      "hora": "10/06 20:01",
-      "actas": 97.982,
-      "sanchez_votos": 9020928,
-      "sanchez_pct": 50.019,
-      "fujimori_votos": 9014171,
-      "fujimori_pct": 49.981,
-      "brecha": 6757
+      "ts": "2026-06-10T11:42:00",
+      "hora": "10/06 11:42",
+      "actas": 97.806,
+      "sanchez_votos": 9011144,
+      "sanchez_pct": 50.013,
+      "fujimori_votos": 9006326,
+      "fujimori_pct": 49.987,
+      "brecha": 4818
     },
     {
-      "ts": "2026-06-11T08:20:26",
-      "hora": "11/06 08:20",
-      "actas": 98.216,
-      "sanchez_votos": 9032092,
+      "ts": "2026-06-10T13:35:00",
+      "hora": "10/06 13:35",
+      "actas": 97.83,
+      "sanchez_votos": 9013284,
+      "sanchez_pct": 50.017,
+      "fujimori_votos": 9007157,
+      "fujimori_pct": 49.983,
+      "brecha": 6127
+    },
+    {
+      "ts": "2026-06-11T09:20:18",
+      "hora": "11/06 04:20",
+      "actas": 98.241,
       "sanchez_pct": 49.998,
-      "fujimori_votos": 9032653,
-      "fujimori_pct": 50.002,
-      "brecha": -561
+      "fujimori_pct": 50.002
+    },
+    {
+      "ts": "2026-06-11T09:55:26",
+      "hora": "11/06 04:55",
+      "actas": 98.346,
+      "sanchez_pct": 50.218,
+      "fujimori_pct": 49.782
     }
   ]
 }
