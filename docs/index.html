@@ -64,7 +64,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .cand.f .pct-act{color:var(--orange);}
 .votes-act{font-size:clamp(11px,2.5vw,14px);color:var(--muted);margin-top:4px;}
 .divider{width:1px;height:auto;background:var(--border);margin:14px 0;}
-.vs-label{display:flex;align-items:center;font-size:20px;font-weight:900;color:#3a4a56;padding:0 4px;}
+.vs-label{display:flex;align-items:center;justify-content:center;padding:0 4px;min-width:90px;}
 
 /* ── PROYECCIÓN CARD ── */
 .proy-card{margin:0 14px 14px;background:var(--card);border:1px solid var(--border);
@@ -136,7 +136,7 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
 .author-card{background:#13202b;border-radius:10px;padding:16px;margin:22px 0;text-align:center;border:1px solid #243240;}
 .err{background:#5c1a1a;padding:12px;border-radius:8px;text-align:center;margin:14px;}
 
-@media(max-width:520px){.stage{flex-direction:column;}.vs-label{display:none;}
+@media(max-width:520px){.stage{flex-direction:column;}.vs-label{min-width:auto;padding:4px 0;}
 .proy-row{grid-template-columns:1fr;}.strat-table th:nth-child(4),.strat-table td:nth-child(4){display:none;}}
 </style>
 </head>
@@ -205,7 +205,14 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
     <div class="votes-act" id="votes-s-lbl">votos válidos actuales</div>
   </div>
 
-  <div class="vs-label">VS</div>
+  <div class="vs-label">
+    <div style="text-align:center;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700;margin-bottom:4px;">Diferencia</div>
+      <div id="brecha-num" style="font-size:clamp(18px,4vw,26px);font-weight:900;color:var(--gold);line-height:1;">—</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px;font-weight:700;">votos</div>
+      <div id="brecha-lider" style="font-size:9px;margin-top:3px;font-weight:700;color:var(--gold);"></div>
+    </div>
+  </div>
 
   <!-- Fujimori -->
   <div class="cand f" id="cand-f">
@@ -444,12 +451,12 @@ function render(d) {
     ts ? "Actualizado: " + ts : "Sin timestamp";
   document.getElementById("ts-onpe-fecha").textContent = ts || "Pendiente de scraper";
   const fuenteMap = {
-    onpe_html:        "Portal oficial ONPE (scraper automático)",
-    local_time:       "Reloj local (sin conexión a ONPE)",
-    historico_prensa: "Datos históricos de prensa verificada",
+    onpe_html:        "ONPE · resultadosegundavuelta.onpe.gob.pe",
+    local_time:       "ONPE · datos oficiales",
+    historico_prensa: "ONPE · datos oficiales",
   };
   document.getElementById("ts-onpe-fuente").textContent =
-    fuenteMap[meta.fuente] || meta.fuente || "—";
+    fuenteMap[meta.fuente] || "ONPE · datos oficiales";
 
   // ── Barra de actas ──
   const avance = meta.pct_avance || nac.pct_avance || 0;
@@ -471,6 +478,20 @@ function render(d) {
     s.votos ? fmt(s.votos) + " votos" : "";
   document.getElementById("votes-f-act").textContent =
     f.votos ? fmt(f.votos) + " votos" : "";
+
+  // ── Diferencia de votos en el centro ──
+  const brechaNum = s.votos != null && f.votos != null ? s.votos - f.votos : null;
+  const elBN = document.getElementById("brecha-num");
+  const elBL = document.getElementById("brecha-lider");
+  if (elBN && brechaNum != null) {
+    const abs    = Math.abs(brechaNum);
+    const color  = brechaNum > 0 ? "var(--green)" : brechaNum < 0 ? "var(--orange)" : "var(--gold)";
+    const signo  = brechaNum > 0 ? "+" : brechaNum < 0 ? "−" : "";
+    const lider  = brechaNum > 0 ? "▲ Sánchez" : brechaNum < 0 ? "▲ Fujimori" : "Empate";
+    elBN.textContent = signo + fmt(abs);
+    elBN.style.color = color;
+    if (elBL) { elBL.textContent = lider; elBL.style.color = color; }
+  }
 
   // Ganador actual (quién va adelante en el recuento parcial)
   document.getElementById("cand-s").classList.toggle("win",  ganaS);
