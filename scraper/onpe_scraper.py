@@ -280,7 +280,7 @@ def proyeccion_univariado(historial):
     }
 
 # ─── PROYECCIÓN ESTRATIFICADA + MONTE CARLO ───────────────────────────────
-def proyeccion_estratificada(lima, resto, extran):
+def proyeccion_estratificada(lima, resto, extran, pesos_ref=None):
     if not (lima and resto and extran):
         return None
 
@@ -293,12 +293,19 @@ def proyeccion_estratificada(lima, resto, extran):
     vv_r  = vv_proj(resto)
     vv_e  = vv_proj(extran)
     total = vv_l + vv_r + vv_e
-    if total == 0:
-        return None
 
-    wL = vv_l / total
-    wR = vv_r / total
-    wE = vv_e / total
+    if total == 0:
+        # Fallback: usar pesos de referencia (última ejecución o padrón 2026)
+        ref = pesos_ref or {"lima": 34.76, "resto": 63.59, "extranjero": 1.64}
+        wL  = ref.get("lima", 34.76) / 100
+        wR  = ref.get("resto", 63.59) / 100
+        wE  = ref.get("extranjero", 1.64) / 100
+        print(f"  [ESTRAT] votos_validos no disponibles — usando pesos referencia: "
+              f"Lima {wL*100:.2f}% Resto {wR*100:.2f}% Ext {wE*100:.2f}%")
+    else:
+        wL = vv_l / total
+        wR = vv_r / total
+        wE = vv_e / total
 
     pL = lima["sanchez"]["pct_validos"]   / 100
     pR = resto["sanchez"]["pct_validos"]  / 100
@@ -404,8 +411,22 @@ def save_data(nacional, lima, resto, extran, ts_onpe):
         })
         print(f"  [HIST] Nuevo snapshot (total: {len(historial)})")
 
+    # Resolver estratos: datos frescos o último valor guardado
+    lima_f   = lima   or existing.get("lima")
+    resto_f  = resto  or existing.get("resto")
+    extran_f = extran or existing.get("extranjero")
+    if lima   is None and lima_f:   print("  [ESTRAT] Lima: usando datos preservados")
+    if extran is None and extran_f: print("  [ESTRAT] Extranjero: usando datos preservados")
+
+    # Pesos de referencia del último cómputo estratificado
+    ex_pesos = None
+    try:
+        ex_pesos = existing["proyeccion"]["estratificado"]["pesos"]
+    except (KeyError, TypeError):
+        pass
+
     proy_univ   = proyeccion_univariado(historial)
-    proy_estrat = proyeccion_estratificada(lima, resto, extran)
+    proy_estrat = proyeccion_estratificada(lima_f, resto_f, extran_f, ex_pesos)
 
     out = {
         "meta": {
@@ -416,9 +437,9 @@ def save_data(nacional, lima, resto, extran, ts_onpe):
             "fuente":                "onpe_html" if ts_onpe else "local_time",
         },
         "nacional":   nacional,
-        "lima":       lima    or existing.get("lima"),
-        "resto":      resto   or existing.get("resto"),
-        "extranjero": extran  or existing.get("extranjero"),
+        "lima":       lima_f,
+        "resto":      resto_f,
+        "extranjero": extran_f,
         "proyeccion": {
             "univariado":    proy_univ,
             "estratificado": proy_estrat,
