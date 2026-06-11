@@ -146,12 +146,28 @@ def scrape():
     print("[SCRAPER] Iniciando Playwright...")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-blink-features=AutomationControlled",
+                "--disable-dev-shm-usage",
+            ],
+        )
         ctx = browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-            )
+                "(KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+            ),
+            viewport={"width": 1280, "height": 900},
+            locale="es-PE",
+            timezone_id="America/Lima",
+            # Ocultar que somos Playwright
+            extra_http_headers={"Accept-Language": "es-PE,es;q=0.9"},
+        )
+        # Remover la propiedad webdriver que delata automatización
+        ctx.add_init_script(
+            "Object.defineProperty(navigator,'webdriver',{get:()=>undefined})"
         )
         page = ctx.new_page()
 
@@ -175,37 +191,55 @@ def scrape():
 
         page.on("response", on_response)
 
+        # Primer intento: página principal con espera larga
         try:
-            page.goto(f"{BASE}/main/resumen", timeout=60000, wait_until="networkidle")
-            page.wait_for_timeout(8000)
+            page.goto(f"{BASE}/main/resumen", timeout=90000, wait_until="domcontentloaded")
+            page.wait_for_timeout(12000)  # Más tiempo para que Angular renderice
         except Exception as e:
-            print(f"  [WARN] Carga de página: {e}")
+            print(f"  [WARN] Carga página /resumen: {e}")
+
+        # Si no capturamos nada, probar URL alternativa
+        if not api_data:
+            try:
+                page.goto(f"{BASE}/", timeout=60000, wait_until="domcontentloaded")
+                page.wait_for_timeout(10000)
+            except Exception as e:
+                print(f"  [WARN] Carga página /: {e}")
 
         # Llamadas directas usando la sesión del navegador (hereda cookies/TLS)
         for strat, params in STRAT_PARAMS.items():
             if strat not in api_data:
                 try:
                     resp = page.request.get(
-                        f"{API_BASE}/candidatos/totales?{params}", timeout=20000
+                        f"{API_BASE}/candidatos/totales?{params}", timeout=30000
                     )
                     if resp.ok:
-                        api_data[strat] = resp.json()
-                        print(f"  [API-DIRECT] {strat} OK")
+                        body = resp.json()
+                        if body:
+                            api_data[strat] = body
+                            print(f"  [API-DIRECT] {strat} OK")
+                        else:
+                            print(f"  [API-DIRECT] {strat} respuesta vacía")
                     else:
                         print(f"  [API-DIRECT] {strat} HTTP {resp.status}")
                 except Exception as e:
                     print(f"  [API-DIRECT] {strat} error: {e}")
 
         if "nacional" not in api_data:
-            try:
-                resp = page.request.get(
-                    f"{API_BASE}/candidatos/totales", timeout=20000
-                )
-                if resp.ok:
-                    api_data["nacional"] = resp.json()
-                    print("  [API-DIRECT] Nacional OK")
-            except Exception as e:
-                print(f"  [API-DIRECT] Nacional error: {e}")
+            for endpoint in [
+                f"{API_BASE}/candidatos/totales",
+                f"{API_BASE}/candidatos/totales?tipoFiltro=ambito_geografico&idAmbitoGeografico=1",
+            ]:
+                try:
+                    resp = page.request.get(endpoint, timeout=30000)
+                    if resp.ok:
+                        body = resp.json()
+                        if body:
+                            api_data["nacional"] = body
+                            print(f"  [API-DIRECT] Nacional OK ({endpoint})")
+                            break
+                except Exception as e:
+                    print(f"  [API-DIRECT] Nacional error ({endpoint}): {e}")
 
         html = page.content()
         browser.close()

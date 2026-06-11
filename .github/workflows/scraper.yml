@@ -7,13 +7,15 @@ on:
 
 permissions:
   contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PLAYWRIGHT_BROWSERS_PATH: /home/runner/work/.cache/ms-playwright
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    
     timeout-minutes: 10
-    env:
-      PLAYWRIGHT_BROWSERS_PATH: /home/runner/work/.cache/ms-playwright  
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,6 +28,7 @@ jobs:
           playwright install-deps chromium
       - name: Run scraper
         run: python scraper/onpe_scraper.py
+        continue-on-error: true
       - name: Commit & push
         run: |
           git config user.name "onpe-bot"
