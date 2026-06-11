@@ -36,17 +36,15 @@
   },
   "resto": {
     "sanchez": {
-      "votos": 6753540,
-      "pct_validos": 57.124
+      "votos": 6658399,
+      "pct_validos": 57.588
     },
     "fujimori": {
-      "votos": 5069617,
-      "pct_validos": 42.876
+      "votos": 4903732,
+      "pct_validos": 42.412
     },
-    "votos_validos": 11823157,
-    "actas_contabilizadas": 62561,
-    "actas_totales": 63519,
-    "pct_avance": 98.492
+    "votos_validos": 11562131,
+    "pct_avance": 98.849
   },
   "extranjero": {
     "sanchez": {
@@ -71,15 +69,16 @@
       "r2": 0.647
     },
     "estratificado": {
-      "sanchez_pct": 49.943,
-      "fujimori_pct": 50.057,
-      "ic_inf": 49.387,
-      "ic_sup": 50.484,
-      "prob_sanchez": 41.4,
-      "prob_fujimori": 58.6,
+      "sanchez_pct": 49.891,
+      "fujimori_pct": 50.109,
+      "ic_inf": 49.331,
+      "ic_sup": 50.452,
+      "prob_sanchez": 38.5,
+      "prob_fujimori": 61.5,
       "pesos": {
         "lima": 34.82,
-        "resto": 65.18
+        "resto": 63.53,
+        "extranjero": 1.65
       },
       "n_sim": 20000
     }

@@ -377,8 +377,8 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
 
   <h2>2.2 Modelo 2 — Estratificado multivariado + Monte Carlo</h2>
   <div class="formula">$$\hat{S}_{\text{final}}=\sum_{k}w_k\,p_k,\quad w_k=\frac{V_k}{\sum_j V_j},\quad V_k=\frac{v_k}{a_k}$$</div>
-  <p>con \(k\in\{\text{Lima, Fuera de Lima, Extranjero}\}\). Incertidumbre por Monte Carlo (N=20 000):</p>
-  <div class="formula">$$p_k^{(\text{sim})}\sim \mathcal{N}(p_k,\sigma_k^2),\;\; \sigma_{\text{Lima}}=0.30\%,\;\sigma_{\text{Resto}}=0.40\%,\;\sigma_{\text{Ext}}=2.0\%$$</div>
+  <p>con \(k\in\{\text{Lima, Fuera de Lima, Internacional}\}\). Incertidumbre por Monte Carlo (N=20 000):</p>
+  <div class="formula">$$p_k^{(\text{sim})}\sim \mathcal{N}(p_k,\sigma_k^2),\;\; \sigma_{\text{Lima}}=0.30\%,\;\sigma_{\text{FDL}}=0.40\%,\;\sigma_{\text{Intl}}=0.50\%$$</div>
 
   <h1>3. Resultados</h1>
   <h2>3.1 Datos por estrato (último corte)</h2>
@@ -722,10 +722,11 @@ function renderStratos(d) {
 
   tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Datos estratificados no disponibles aún (se obtienen en la próxima corrida del scraper)</td></tr>';
 
-  // Mostrar pesos si los hay
-  if (pesos.lima) {
+  // Mostrar pesos si los hay (3 estratos: Lima + FDL + Internacional)
+  if (pesos.lima != null) {
+    const pesoExt = pesos.extranjero != null ? ` · Internacional ${fmtP2(pesos.extranjero)}` : "";
     document.getElementById("strat-pesos").textContent =
-      `Pesos proyectados: Lima ${fmtP2(pesos.lima)} · Fuera de Lima ${fmtP2(pesos.resto)} · Extranjero ${fmtP2(pesos.extranjero)}`;
+      `Pesos proyectados: Lima ${fmtP2(pesos.lima)} · Fuera de Lima ${fmtP2(pesos.resto)}${pesoExt}`;
   }
 }
 

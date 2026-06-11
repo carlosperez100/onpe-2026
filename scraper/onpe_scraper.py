@@ -219,29 +219,33 @@ def scrape():
 
     return nacional, lima, extran, ts_onpe
 
-# ─── CALCULAR RESTO = "Fuera de Lima" = Nacional − Lima ──────────────────
+# ─── CALCULAR RESTO = "Fuera de Lima" = Nacional − Lima − Extranjero ─────
 def calcular_resto(nacional, lima, extran=None):
-    """Fuera de Lima = Nacional - Lima (incluye Extranjero dentro)."""
+    """Fuera de Lima = Nacional - Lima - Extranjero (3 estratos independientes)."""
     if not (lima and nacional and nacional.get("votos_validos")):
         return None
     vv_n = nacional["votos_validos"]
     vv_l = lima.get("votos_validos") or 0
-    vv_r = vv_n - vv_l
+    vv_e = (extran.get("votos_validos") or 0) if extran else 0
+    vv_r = vv_n - vv_l - vv_e
     if vv_r <= 0:
         return None
     s_n = nacional["sanchez"]["votos"]  or 0
     f_n = nacional["fujimori"]["votos"] or 0
-    s_l = (lima["sanchez"]["votos"]  or 0)
-    f_l = (lima["fujimori"]["votos"] or 0)
-    s_r = s_n - s_l
-    f_r = f_n - f_l
+    s_l = (lima["sanchez"]["votos"]    or 0)
+    f_l = (lima["fujimori"]["votos"]   or 0)
+    s_e = ((extran["sanchez"]["votos"]  or 0) if extran else 0)
+    f_e = ((extran["fujimori"]["votos"] or 0) if extran else 0)
+    s_r = s_n - s_l - s_e
+    f_r = f_n - f_l - f_e
     tot_r = s_r + f_r
     if tot_r <= 0:
         return None
-    # Avance derivado: actas nac - actas Lima
+    # Avance derivado: (actas nac - actas Lima - actas Extran) / VV_resto
     a_n  = nacional.get("pct_avance", 0) / 100
     a_l  = lima.get("pct_avance",     0) / 100
-    num_r = a_n * vv_n - a_l * vv_l
+    a_e  = (extran.get("pct_avance",  0) / 100) if extran else 0
+    num_r = a_n * vv_n - a_l * vv_l - a_e * vv_e
     av_r  = max(0.0, min(100.0, (num_r / vv_r) * 100)) if vv_r else 0.0
     return {
         "sanchez":       {"votos": s_r, "pct_validos": round(100 * s_r / tot_r, 3)},
@@ -279,7 +283,8 @@ def proyeccion_univariado(historial):
     }
 
 # ─── PROYECCIÓN ESTRATIFICADA + MONTE CARLO ───────────────────────────────
-# Modelo 2 estratos: Lima y Fuera de Lima (= Nacional - Lima, incluye Extranjero)
+# Modelo 3 estratos: Lima · Fuera de Lima · Internacional
+# Lima + FDL + Internacional = 100% del Nacional
 def proyeccion_estratificada(lima, resto, extran=None, pesos_ref=None):
     if not (lima and resto):
         return None
@@ -291,31 +296,36 @@ def proyeccion_estratificada(lima, resto, extran=None, pesos_ref=None):
 
     vv_l = vv_proj(lima)
     vv_r = vv_proj(resto)
-    total = vv_l + vv_r
+    vv_e = vv_proj(extran) if extran else 0
+    total = vv_l + vv_r + vv_e
 
     if total == 0:
-        ref = pesos_ref or {"lima": 34.82, "resto": 65.18}
-        wL  = ref.get("lima", 34.82) / 100
-        wR  = ref.get("resto", 65.18) / 100
+        ref = pesos_ref or {"lima": 34.82, "resto": 63.53, "extranjero": 1.65}
+        wL  = ref.get("lima",       34.82) / 100
+        wR  = ref.get("resto",      63.53) / 100
+        wE  = ref.get("extranjero",  1.65) / 100
         print(f"  [ESTRAT] votos_validos no disponibles — usando pesos referencia: "
-              f"Lima {wL*100:.2f}% FueraDeLima {wR*100:.2f}%")
+              f"Lima {wL*100:.2f}% FDL {wR*100:.2f}% Intl {wE*100:.2f}%")
     else:
         wL = vv_l / total
         wR = vv_r / total
+        wE = vv_e / total
 
     pL = lima["sanchez"]["pct_validos"]  / 100
     pR = resto["sanchez"]["pct_validos"] / 100
+    pE = (extran["sanchez"]["pct_validos"] / 100) if extran else pL
 
-    sf_central = wL * pL + wR * pR
+    sf_central = wL * pL + wR * pR + wE * pE
 
-    N       = 20_000
-    sigma   = {"L": 0.003, "R": 0.004}
+    N      = 20_000
+    sigma  = {"L": 0.003, "R": 0.004, "E": 0.005}
     count_s = 0
     sims    = []
     for _ in range(N):
         pl = random.gauss(pL, sigma["L"])
         pr = random.gauss(pR, sigma["R"])
-        sf = wL * pl + wR * pr
+        pe = random.gauss(pE, sigma["E"])
+        sf = wL * pl + wR * pr + wE * pe
         sims.append(sf)
         if sf > 0.5:
             count_s += 1
@@ -329,8 +339,9 @@ def proyeccion_estratificada(lima, resto, extran=None, pesos_ref=None):
         "prob_sanchez":  round(100 * count_s / N, 1),
         "prob_fujimori": round(100 * (N - count_s) / N, 1),
         "pesos": {
-            "lima":  round(wL * 100, 2),
-            "resto": round(wR * 100, 2),
+            "lima":       round(wL * 100, 2),
+            "resto":      round(wR * 100, 2),
+            "extranjero": round(wE * 100, 2),
         },
         "n_sim": N,
     }
@@ -411,16 +422,19 @@ def save_data(nacional, lima, resto, extran, ts_onpe):
     if lima   is None and lima_f:   print("  [ESTRAT] Lima: usando datos preservados")
     if extran is None and extran_f: print("  [ESTRAT] Extranjero: usando datos preservados")
 
-    # Pesos de referencia del último cómputo estratificado
+    # Pesos de referencia del último cómputo estratificado (3 estratos)
     ex_pesos = None
     try:
         ex_pesos = existing["proyeccion"]["estratificado"]["pesos"]
     except (KeyError, TypeError):
         pass
+    # Asegurar que ex_pesos tiene clave "extranjero"
+    if ex_pesos and "extranjero" not in ex_pesos:
+        ex_pesos = None
 
     proy_univ   = proyeccion_univariado(historial)
-    # Modelo 2 estratos: Lima y Fuera de Lima (resto = Nacional - Lima)
-    proy_estrat = proyeccion_estratificada(lima_f, resto_f, None, ex_pesos)
+    # Modelo 3 estratos: Lima · Fuera de Lima · Internacional
+    proy_estrat = proyeccion_estratificada(lima_f, resto_f, extran_f, ex_pesos)
 
     out = {
         "meta": {
