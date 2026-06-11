@@ -154,8 +154,34 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
   <div class="hero-sub">Proyección al 100% · Modelo de Excelencia GEMSES · Mg. Carlos Pérez Pérez</div>
 </div>
 
+<!-- ─── BLOQUE FECHA/HORA ONPE ─────────────────────────────────── -->
+<div id="ts-onpe-card" style="
+    margin:10px 14px 0;
+    background:linear-gradient(135deg,#0e1d2e,#13202b);
+    border:1px solid rgba(212,175,55,.4);
+    border-radius:12px;
+    padding:12px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px;">
+    <span style="font-size:22px;">🕐</span>
+    <div>
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+                  color:var(--gold);font-weight:700;">Última actualización ONPE</div>
+      <div id="ts-onpe-fecha" style="font-size:clamp(16px,4vw,22px);font-weight:900;
+                                      color:#fff;letter-spacing:.3px;">—</div>
+    </div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Fuente</div>
+    <div id="ts-onpe-fuente" style="font-size:11px;color:#aab8c2;font-weight:600;">—</div>
+  </div>
+</div>
+
 <!-- ─── BARRA ACTAS ───────────────────────────────────────────── -->
-<div class="actas-bar-wrap" id="actas-wrap">
+<div class="actas-bar-wrap" id="actas-wrap" style="margin-top:10px;">
   <div class="actas-bar-label">
     <span>Actas computadas <span id="actas-count" style="color:#aab8c2;font-size:11px;"></span></span>
     <span class="pct" id="actas-pct">—%</span>
@@ -371,10 +397,18 @@ function render(d) {
   const pe   = proy.estratificado || {};
   const pu   = proy.univariado    || {};
 
-  // ── Top bar timestamp ──
+  // ── Timestamp ONPE ──
   const ts = meta.ultima_actualizacion || "";
   document.getElementById("ts-bar").textContent =
     ts ? "Actualizado: " + ts : "Sin timestamp";
+  document.getElementById("ts-onpe-fecha").textContent = ts || "Pendiente de scraper";
+  const fuenteMap = {
+    onpe_html:        "Portal oficial ONPE (scraper automático)",
+    local_time:       "Reloj local (sin conexión a ONPE)",
+    historico_prensa: "Datos históricos de prensa verificada",
+  };
+  document.getElementById("ts-onpe-fuente").textContent =
+    fuenteMap[meta.fuente] || meta.fuente || "—";
 
   // ── Barra de actas ──
   const avance = meta.pct_avance || nac.pct_avance || 0;
