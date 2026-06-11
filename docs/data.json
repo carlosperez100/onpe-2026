@@ -203,6 +203,16 @@
       "fujimori_votos": 9007157,
       "fujimori_pct": 49.782,
       "brecha": 6127
+    },
+    {
+      "ts": "2026-06-11T13:20:26",
+      "hora": "11/06 08:20",
+      "actas": 98.216,
+      "sanchez_votos": 9032092,
+      "sanchez_pct": 49.998,
+      "fujimori_votos": 9032653,
+      "fujimori_pct": 50.002,
+      "brecha": -561
     }
   ]
 }
