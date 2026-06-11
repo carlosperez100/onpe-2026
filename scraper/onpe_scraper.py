@@ -440,7 +440,8 @@ def main():
 
     print(f"\n[NACIONAL] Sánchez:  {nacional['sanchez']['votos']:,} ({nacional['sanchez']['pct_validos']}%)")
     print(f"[NACIONAL] Fujimori: {nacional['fujimori']['votos']:,} ({nacional['fujimori']['pct_validos']}%)")
-    print(f"[NACIONAL] Actas:    {avance:.3f}%".replace("avance", str(nacional.get("pct_avance", 0))))
+    avance = nacional.get("pct_avance", 0)
+    print(f"[NACIONAL] Actas:    {float(avance):.3f}%")
     for tag, strat in [("LIMA   ", lima), ("EXTRAN ", extran), ("RESTO  ", resto)]:
         if strat:
             print(f"[{tag}] S {strat['sanchez']['pct_validos']}% "
