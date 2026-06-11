@@ -18,17 +18,28 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Pull absoluto más reciente ANTES de correr el scraper
+      # Esto garantiza que el scraper lea el historial más actualizado
+      - name: Pull latest
+        run: git pull origin main --ff-only || git pull origin main
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install deps
         run: |
           pip install -r scraper/requirements.txt
           playwright install chromium
           playwright install-deps chromium
+
       - name: Run scraper
         run: python scraper/onpe_scraper.py
         continue-on-error: true
+
       - name: Commit & push
         run: |
           git config user.name "onpe-bot"
@@ -36,7 +47,44 @@ jobs:
           git add docs/data.json
           if git diff --staged --quiet; then
             echo "No changes"
-          else
-            git commit -m "data: snapshot $(date -u +%Y-%m-%dT%H:%M:%S%z)"
-            git push
+            exit 0
           fi
+          git commit -m "data: snapshot $(date -u +%Y-%m-%dT%H:%M:%S%z)"
+
+          # Reintentar push hasta 3 veces; en conflicto, mergear historial
+          for attempt in 1 2 3; do
+            if git push origin main; then
+              echo "Push OK en intento $attempt"
+              exit 0
+            fi
+            echo "Push falló (intento $attempt) — haciendo rebase..."
+            git fetch origin main
+
+            # Guardar nuestra versión de data.json antes del rebase
+            cp docs/data.json docs/data.json.ours
+
+            if git rebase origin/main; then
+              # Rebase limpio: data.json ya es la versión mergeada del rebase
+              # Pero puede que sea la versión remota sin nuestro snapshot nuevo
+              # Restauramos ours y re-commiteamos
+              git show HEAD:docs/data.json > docs/data.json.theirs 2>/dev/null || true
+              if [ -f docs/data.json.theirs ]; then
+                python scraper/merge_historial.py
+                git add docs/data.json
+                git commit --amend --no-edit
+              fi
+            else
+              # Conflicto en rebase: tomar ambas versiones y mergear historial
+              git checkout --theirs docs/data.json 2>/dev/null || true
+              cp docs/data.json docs/data.json.theirs
+              cp docs/data.json.ours docs/data.json
+              python scraper/merge_historial.py
+              git add docs/data.json
+              git rebase --continue
+            fi
+
+            sleep 3
+          done
+
+          echo "ERROR: No se pudo hacer push tras 3 intentos"
+          exit 1
