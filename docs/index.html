@@ -203,14 +203,22 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
     <div class="pct-act" id="pct-s-act">—</div>
     <div class="votes-act" id="votes-s-act" style="font-size:13px;font-weight:700;color:#e7e9ea;margin-top:2px;"></div>
     <div class="votes-act" id="votes-s-lbl">votos válidos actuales</div>
+    <div style="margin-top:10px;border-top:1px solid rgba(46,204,113,.2);padding-top:8px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;">Proyectado al 100%</div>
+      <div id="proy-s-pct" style="font-size:clamp(16px,4vw,22px);font-weight:900;color:var(--green);line-height:1.1;margin-top:2px;">—</div>
+    </div>
   </div>
 
   <div class="vs-label">
     <div style="text-align:center;">
       <div style="font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:700;margin-bottom:4px;">Diferencia</div>
       <div id="brecha-num" style="font-size:clamp(18px,4vw,26px);font-weight:900;color:var(--gold);line-height:1;">—</div>
-      <div style="font-size:9px;color:var(--muted);margin-top:2px;font-weight:700;">votos</div>
+      <div style="font-size:9px;color:var(--muted);margin-top:2px;font-weight:700;">votos actuales</div>
       <div id="brecha-lider" style="font-size:9px;margin-top:3px;font-weight:700;color:var(--gold);"></div>
+      <div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;margin-bottom:3px;">Proyección 100%</div>
+        <div id="proy-lider-centro" style="font-size:10px;font-weight:900;color:var(--gold);">—</div>
+      </div>
     </div>
   </div>
 
@@ -225,7 +233,12 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
     <div class="cand-party">Fuerza Popular · N.° 10</div>
     <div class="pct-act" id="pct-f-act">—</div>
     <div class="votes-act" id="votes-f-act" style="font-size:13px;font-weight:700;color:#e7e9ea;margin-top:2px;"></div>
+
     <div class="votes-act" id="votes-f-lbl">votos válidos actuales</div>
+    <div style="margin-top:10px;border-top:1px solid rgba(255,140,66,.2);padding-top:8px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;">Proyectado al 100%</div>
+      <div id="proy-f-pct" style="font-size:clamp(16px,4vw,22px);font-weight:900;color:var(--orange);line-height:1.1;margin-top:2px;">—</div>
+    </div>
   </div>
 </div>
 
@@ -496,6 +509,21 @@ function render(d) {
   // Ganador actual (quién va adelante en el recuento parcial)
   document.getElementById("cand-s").classList.toggle("win",  ganaS);
   document.getElementById("cand-f").classList.toggle("win", !ganaS);
+
+  // ── Proyectado al 100% en tarjetas candidatos ──
+  const bestS = pe.sanchez_pct  != null ? pe.sanchez_pct  : pu.sanchez_pct;
+  const bestF = pe.fujimori_pct != null ? pe.fujimori_pct : pu.fujimori_pct;
+  const elPS = document.getElementById("proy-s-pct");
+  const elPF = document.getElementById("proy-f-pct");
+  const elPC = document.getElementById("proy-lider-centro");
+  if (elPS && bestS != null) elPS.textContent = fmtP(bestS);
+  if (elPF && bestF != null) elPF.textContent = fmtP(bestF);
+  if (elPC && bestS != null && bestF != null) {
+    const ganaS = bestS > bestF;
+    const lider = ganaS ? "Sánchez" : "Fujimori";
+    const color = ganaS ? "var(--green)" : "var(--orange)";
+    elPC.innerHTML = `<span style="color:${color}">▲ ${lider}<br>${fmtP(ganaS ? bestS : bestF)}</span>`;
+  }
 
   // ── Proyección estratificada (RECOMENDADA) ──
   const peS = pe.sanchez_pct;
