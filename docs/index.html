@@ -3,139 +3,280 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ONPE 2026 · Proyección GEMSES</title>
-<script>
-  window.MathJax = { tex:{ inlineMath:[['\\(','\\)']], displayMath:[['$$','$$']] } };
-</script>
+<title>ONPE 2026 · Resultados y Proyección GEMSES</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['$$','$$']]}};</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root{ --green:#2ecc71; --orange:#ff8c42; --navy:#1a4d7a; --gold:#d4af37; }
-  *{ margin:0; padding:0; box-sizing:border-box; }
-  body{ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-        background:#0b0e13; color:#e7e9ea; line-height:1.6; }
+:root{
+  --green:#2ecc71; --orange:#ff8c42; --navy:#1a4d7a;
+  --gold:#d4af37;  --bg:#0b0e13;    --card:#111820;
+  --border:#1e2d3d; --text:#e7e9ea; --muted:#8b98a5;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+     background:var(--bg);color:var(--text);line-height:1.55;}
 
-  /* ===== HERO TV BROADCAST ===== */
-  .tv{ min-height:100vh; display:flex; flex-direction:column;
-       background:radial-gradient(ellipse at top,#15202b 0%,#0b0e13 70%); position:relative; }
-  .tv-top{ text-align:center; padding:18px 16px 6px; }
-  .tv-kicker{ display:inline-block; background:#c0392b; color:#fff; font-size:12px; font-weight:800;
-              letter-spacing:2px; padding:5px 16px; border-radius:4px; animation:pulse 2s infinite; }
-  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.65;} }
-  .tv-title{ font-size:clamp(18px,5vw,30px); font-weight:900; color:#fff; margin-top:10px; letter-spacing:.5px; }
-  .tv-sub{ font-size:clamp(11px,3vw,14px); color:#8b98a5; margin-top:4px; }
-  .tv-stage{ flex:1; display:flex; align-items:stretch; gap:0; padding:14px; }
-  .cand{ flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;
-         padding:20px 12px; border-radius:18px; position:relative; transition:.4s; }
-  .cand.s{ background:linear-gradient(160deg,rgba(46,204,113,.16),rgba(46,204,113,.04)); border:2px solid rgba(46,204,113,.4); }
-  .cand.f{ background:linear-gradient(160deg,rgba(255,140,66,.16),rgba(255,140,66,.04)); border:2px solid rgba(255,140,66,.4); }
-  .cand.win{ box-shadow:0 0 40px rgba(212,175,55,.5); border-color:var(--gold); }
-  .cand-photo{ width:clamp(70px,18vw,110px); height:clamp(70px,18vw,110px); border-radius:50%;
-               display:flex; align-items:center; justify-content:center; font-size:clamp(28px,8vw,48px);
-               font-weight:900; margin-bottom:10px; overflow:hidden; }
-  .cand-photo img{ width:100%; height:100%; object-fit:cover; }
-  .cand.s .cand-photo{ background:var(--green); color:#06351a; }
-  .cand.f .cand-photo{ background:var(--orange); color:#3d1c06; }
-  .cand-name{ font-size:clamp(14px,4vw,20px); font-weight:800; color:#fff; text-align:center; }
-  .cand-party{ font-size:clamp(10px,2.6vw,13px); color:#8b98a5; margin-bottom:8px; }
-  .cand-pct{ font-size:clamp(40px,13vw,76px); font-weight:900; line-height:1; }
-  .cand.s .cand-pct{ color:var(--green); } .cand.f .cand-pct{ color:var(--orange); }
-  .cand-votes{ font-size:clamp(11px,3vw,15px); color:#aab8c2; margin-top:6px; }
-  .winner-badge{ position:absolute; top:-12px; background:var(--gold); color:#1a1400; font-weight:900;
-                 font-size:11px; padding:4px 14px; border-radius:20px; letter-spacing:1px; }
-  .vs{ display:flex; align-items:center; justify-content:center; padding:0 6px;
-       font-size:clamp(16px,5vw,28px); font-weight:900; color:#5a6b7a; }
-  .prob-wrap{ padding:8px 18px 16px; }
-  .prob-label{ display:flex; justify-content:space-between; font-size:12px; color:#8b98a5; margin-bottom:4px; }
-  .prob-bar{ height:14px; border-radius:8px; overflow:hidden; display:flex; background:#1a2530; }
-  .prob-bar .ps{ background:var(--green); } .prob-bar .pf{ background:var(--orange); }
-  .tv-foot{ text-align:center; padding:10px 16px 22px; }
-  .tv-foot .model{ font-size:13px; color:var(--gold); font-weight:700; }
-  .tv-foot .meta{ font-size:11px; color:#657786; margin-top:3px; }
-  .scroll-hint{ text-align:center; padding-bottom:14px; color:#5a6b7a; font-size:12px; animation:bob 1.8s infinite; }
-  @keyframes bob{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(5px);} }
+/* ── TOP BAR ── */
+.topbar{background:#c0392b;display:flex;align-items:center;justify-content:space-between;
+        padding:8px 18px;font-size:12px;font-weight:700;letter-spacing:1px;}
+.topbar .live{animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.topbar .ts{font-weight:400;letter-spacing:0;font-size:11px;opacity:.9;}
 
-  /* ===== RESEARCH DOC ===== */
-  .doc{ max-width:820px; margin:0 auto; padding:30px 18px 60px; }
-  .doc h1{ font-size:24px; color:#fff; margin:34px 0 6px; padding-bottom:6px; border-bottom:2px solid var(--navy); }
-  .doc h2{ font-size:18px; color:#cfe0ef; margin:24px 0 8px; }
-  .doc h3{ font-size:15px; color:#aab8c2; margin:18px 0 6px; }
-  .doc p{ margin:8px 0; color:#c9d3db; font-size:15px; }
-  .doc .lead{ font-size:16px; color:#e7e9ea; }
-  .doc sup{ color:var(--gold); font-weight:700; font-size:.7em; }
-  .abstract{ background:#13202b; border-left:4px solid var(--navy); padding:16px; border-radius:8px; margin:14px 0; }
-  .formula{ background:#10171f; border:1px solid #243240; border-radius:8px; padding:14px; margin:14px 0; overflow-x:auto; }
-  table.t{ width:100%; border-collapse:collapse; font-size:13px; margin:14px 0; }
-  table.t th,table.t td{ border:1px solid #243240; padding:8px; text-align:center; }
-  table.t th{ background:var(--navy); color:#fff; }
-  table.t td:first-child,table.t th:first-child{ text-align:left; }
-  .s-c{ color:var(--green); font-weight:700; } .f-c{ color:var(--orange); font-weight:700; }
-  .callout{ background:#2a2510; border:1px solid var(--gold); border-radius:8px; padding:14px; margin:14px 0; font-size:14px; }
-  .refs{ counter-reset:ref; font-size:13px; }
-  .refs .r{ padding:6px 0 6px 30px; position:relative; border-bottom:1px solid #1a2530; color:#aab8c2; }
-  .refs .r::before{ counter-increment:ref; content:counter(ref)"."; position:absolute; left:0; color:var(--gold); font-weight:700; }
-  .chart-box{ background:#10171f; border-radius:10px; padding:14px; margin:14px 0; }
-  canvas{ max-height:300px; }
-  .author-card{ background:#13202b; border-radius:10px; padding:18px; margin:24px 0; text-align:center; border:1px solid #243240; }
-  .err{ background:#5c1a1a; padding:12px; border-radius:8px; text-align:center; margin:14px; }
-  @media(max-width:520px){ .tv-stage{ flex-direction:column; } .vs{ padding:8px 0; } }
+/* ── HERO ── */
+.hero{background:radial-gradient(ellipse at top,#15202b 0%,var(--bg) 70%);
+      padding:18px 14px 12px;}
+.hero-title{text-align:center;font-size:clamp(16px,4vw,24px);font-weight:900;
+            color:#fff;letter-spacing:.3px;}
+.hero-sub{text-align:center;font-size:12px;color:var(--muted);margin-top:4px;}
+
+/* ── ACTAS PROGRESS ── */
+.actas-bar-wrap{margin:12px 18px 0;background:var(--card);border-radius:12px;padding:12px 16px;}
+.actas-bar-label{display:flex;justify-content:space-between;font-size:12px;
+                 color:var(--muted);margin-bottom:6px;}
+.actas-bar-label .pct{font-size:18px;font-weight:800;color:#fff;}
+.actas-bar{height:10px;background:#1a2530;border-radius:6px;overflow:hidden;}
+.actas-fill{height:100%;background:linear-gradient(90deg,var(--navy),#2980b9);
+            border-radius:6px;transition:width .6s ease;}
+
+/* ── CANDIDATOS ── */
+.stage{display:flex;align-items:stretch;gap:10px;padding:14px;}
+.cand{flex:1;border-radius:16px;padding:18px 12px;position:relative;text-align:center;}
+.cand.s{background:linear-gradient(160deg,rgba(46,204,113,.14),rgba(46,204,113,.03));
+         border:2px solid rgba(46,204,113,.35);}
+.cand.f{background:linear-gradient(160deg,rgba(255,140,66,.14),rgba(255,140,66,.03));
+         border:2px solid rgba(255,140,66,.35);}
+.cand.win{box-shadow:0 0 40px rgba(212,175,55,.4);border-color:var(--gold)!important;}
+.winner-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+              background:var(--gold);color:#1a1400;font-size:10px;font-weight:900;
+              padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:1px;}
+.photo{width:clamp(60px,15vw,90px);height:clamp(60px,15vw,90px);border-radius:50%;
+       overflow:hidden;margin:0 auto 10px;display:flex;align-items:center;
+       justify-content:center;font-size:clamp(22px,6vw,36px);font-weight:900;}
+.cand.s .photo{background:var(--green);color:#06351a;}
+.cand.f .photo{background:var(--orange);color:#3d1c06;}
+.photo img{width:100%;height:100%;object-fit:cover;}
+.cand-name{font-size:clamp(12px,3.5vw,16px);font-weight:800;color:#fff;}
+.cand-party{font-size:10px;color:var(--muted);margin-bottom:10px;}
+.pct-act{font-size:clamp(32px,10vw,56px);font-weight:900;line-height:1;}
+.cand.s .pct-act{color:var(--green);}
+.cand.f .pct-act{color:var(--orange);}
+.votes-act{font-size:clamp(11px,2.5vw,14px);color:var(--muted);margin-top:4px;}
+.divider{width:1px;height:auto;background:var(--border);margin:14px 0;}
+.vs-label{display:flex;align-items:center;font-size:20px;font-weight:900;color:#3a4a56;padding:0 4px;}
+
+/* ── PROYECCIÓN CARD ── */
+.proy-card{margin:0 14px 14px;background:var(--card);border:1px solid var(--border);
+           border-radius:14px;padding:14px 16px;}
+.proy-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;
+            color:var(--gold);font-weight:700;margin-bottom:10px;}
+.proy-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.proy-block{background:#0e1820;border-radius:10px;padding:10px 12px;}
+.proy-block-label{font-size:10px;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:1px;margin-bottom:6px;}
+.proy-nums{display:flex;justify-content:space-between;align-items:baseline;}
+.proy-pct-s{font-size:clamp(18px,4vw,24px);font-weight:900;color:var(--green);}
+.proy-pct-f{font-size:clamp(18px,4vw,24px);font-weight:900;color:var(--orange);}
+.proy-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:4px;}
+.tag-s{background:rgba(46,204,113,.2);color:var(--green);}
+.tag-f{background:rgba(255,140,66,.2);color:var(--orange);}
+.proy-ic{font-size:10px;color:var(--muted);margin-top:4px;}
+.prob-wrap{margin-top:10px;}
+.prob-labels{display:flex;justify-content:space-between;font-size:11px;
+             color:var(--muted);margin-bottom:4px;}
+.prob-bar{height:16px;border-radius:8px;overflow:hidden;display:flex;background:#1a2530;}
+.prob-s{background:var(--green);}
+.prob-f{background:var(--orange);}
+.empate-callout{margin-top:10px;background:#2a2510;border:1px solid var(--gold);
+                border-radius:8px;padding:10px;font-size:12px;color:#d4c060;text-align:center;}
+
+/* ── STRAT TABLE ── */
+.strat-card{margin:0 14px 14px;background:var(--card);border:1px solid var(--border);
+            border-radius:14px;padding:14px 16px;}
+.strat-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;
+             color:var(--muted);font-weight:700;margin-bottom:10px;}
+.strat-table{width:100%;border-collapse:collapse;font-size:12px;}
+.strat-table th{background:#0e1820;color:var(--muted);font-weight:600;
+                padding:8px 10px;text-align:left;font-size:10px;
+                text-transform:uppercase;letter-spacing:.8px;}
+.strat-table td{padding:9px 10px;border-top:1px solid var(--border);}
+.strat-table tr:hover td{background:rgba(255,255,255,.02);}
+.bar-mini{height:6px;background:#1a2530;border-radius:3px;overflow:hidden;margin-top:4px;}
+.bar-s{height:100%;border-radius:3px;background:var(--green);}
+.pct-s{color:var(--green);font-weight:700;}
+.pct-f{color:var(--orange);font-weight:700;}
+.avance-pct{color:#aab8c2;font-size:11px;}
+
+/* ── CHART ── */
+.chart-card{margin:0 14px 14px;background:var(--card);border:1px solid var(--border);
+            border-radius:14px;padding:14px 16px;}
+.chart-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;
+             color:var(--muted);font-weight:700;margin-bottom:10px;}
+canvas{max-height:280px;}
+
+/* ── MODELO DOC ── */
+.doc{max-width:820px;margin:0 auto;padding:28px 18px 60px;}
+.doc h1{font-size:22px;color:#fff;margin:30px 0 6px;padding-bottom:6px;border-bottom:2px solid var(--navy);}
+.doc h2{font-size:17px;color:#cfe0ef;margin:22px 0 8px;}
+.doc h3{font-size:14px;color:var(--muted);margin:16px 0 6px;}
+.doc p{margin:8px 0;color:#c9d3db;font-size:14px;}
+.doc .lead{font-size:15px;color:var(--text);}
+.doc sup{color:var(--gold);font-weight:700;font-size:.7em;}
+.abstract{background:#13202b;border-left:4px solid var(--navy);padding:14px;border-radius:8px;margin:14px 0;}
+.formula{background:#10171f;border:1px solid #243240;border-radius:8px;padding:12px;margin:12px 0;overflow-x:auto;}
+table.t{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0;}
+table.t th,table.t td{border:1px solid #243240;padding:7px;text-align:center;}
+table.t th{background:var(--navy);color:#fff;}
+table.t td:first-child,table.t th:first-child{text-align:left;}
+.callout{background:#2a2510;border:1px solid var(--gold);border-radius:8px;padding:12px;margin:12px 0;font-size:13px;}
+.refs{counter-reset:ref;font-size:12px;}
+.refs .r{padding:5px 0 5px 28px;position:relative;border-bottom:1px solid #1a2530;color:var(--muted);}
+.refs .r::before{counter-increment:ref;content:counter(ref)".";position:absolute;left:0;color:var(--gold);font-weight:700;}
+.author-card{background:#13202b;border-radius:10px;padding:16px;margin:22px 0;text-align:center;border:1px solid #243240;}
+.err{background:#5c1a1a;padding:12px;border-radius:8px;text-align:center;margin:14px;}
+
+@media(max-width:520px){.stage{flex-direction:column;}.vs-label{display:none;}
+.proy-row{grid-template-columns:1fr;}.strat-table th:nth-child(4),.strat-table td:nth-child(4){display:none;}}
 </style>
 </head>
 <body>
 
-<section class="tv">
-  <div class="tv-top">
-    <span class="tv-kicker">● PROYECCIÓN EN VIVO</span>
-    <div class="tv-title">🇵🇪 SEGUNDA VUELTA 2026</div>
-    <div class="tv-sub" id="tvsub">Proyección al 100% de actas · Modelo GEMSES</div>
+<!-- ─── TOP BAR ─────────────────────────────────────────────── -->
+<div class="topbar">
+  <span class="live">● EN VIVO · SEGUNDA VUELTA 2026</span>
+  <span class="ts" id="ts-bar">Cargando...</span>
+</div>
+
+<!-- ─── HERO ─────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-title">🇵🇪 RESULTADOS ONPE · SEGUNDA VUELTA PRESIDENCIAL 2026</div>
+  <div class="hero-sub">Proyección al 100% · Modelo de Excelencia GEMSES · Mg. Carlos Pérez Pérez</div>
+</div>
+
+<!-- ─── BARRA ACTAS ───────────────────────────────────────────── -->
+<div class="actas-bar-wrap" id="actas-wrap">
+  <div class="actas-bar-label">
+    <span>Actas computadas <span id="actas-count" style="color:#aab8c2;font-size:11px;"></span></span>
+    <span class="pct" id="actas-pct">—%</span>
   </div>
-  <div class="tv-stage" id="stage">
-    <div class="cand s" id="cand-s">
-      <div class="winner-badge" id="badge-s" style="display:none">★ GANADOR PROYECTADO</div>
-      <div class="cand-photo"><img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/16002918.png" alt="Roberto Sánchez" onerror="this.parentNode.textContent='RS'"></div>
-      <div class="cand-name">Roberto Sánchez</div>
-      <div class="cand-party">Juntos por el Perú</div>
-      <div class="cand-pct" id="pct-s">—</div>
-      <div class="cand-votes" id="votes-s"></div>
+  <div class="actas-bar"><div class="actas-fill" id="actas-fill" style="width:0%"></div></div>
+</div>
+
+<!-- ─── CANDIDATOS ───────────────────────────────────────────── -->
+<div class="stage">
+  <!-- Sánchez -->
+  <div class="cand s" id="cand-s">
+    <div class="winner-badge" id="badge-s" style="display:none">★ GANADOR PROYECTADO</div>
+    <div class="photo">
+      <img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/16002918.png"
+           alt="RS" onerror="this.parentNode.textContent='RS'">
     </div>
-    <div class="vs">VS</div>
-    <div class="cand f" id="cand-f">
-      <div class="winner-badge" id="badge-f" style="display:none">★ GANADOR PROYECTADO</div>
-      <div class="cand-photo"><img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/10001088.png" alt="Keiko Fujimori" onerror="this.parentNode.textContent='KF'"></div>
-      <div class="cand-name">Keiko Fujimori</div>
-      <div class="cand-party">Fuerza Popular</div>
-      <div class="cand-pct" id="pct-f">—</div>
-      <div class="cand-votes" id="votes-f"></div>
+    <div class="cand-name">Roberto Sánchez</div>
+    <div class="cand-party">Juntos por el Perú · N.° 16</div>
+    <div class="pct-act" id="pct-s-act">—</div>
+    <div class="votes-act" id="votes-s-act" style="font-size:13px;font-weight:700;color:#e7e9ea;margin-top:2px;"></div>
+    <div class="votes-act" id="votes-s-lbl">votos válidos actuales</div>
+  </div>
+
+  <div class="vs-label">VS</div>
+
+  <!-- Fujimori -->
+  <div class="cand f" id="cand-f">
+    <div class="winner-badge" id="badge-f" style="display:none">★ GANADOR PROYECTADO</div>
+    <div class="photo">
+      <img src="https://resultadosegundavuelta.onpe.gob.pe/assets/img-reales/candidatos/10001088.png"
+           alt="KF" onerror="this.parentNode.textContent='KF'">
+    </div>
+    <div class="cand-name">Keiko Fujimori</div>
+    <div class="cand-party">Fuerza Popular · N.° 10</div>
+    <div class="pct-act" id="pct-f-act">—</div>
+    <div class="votes-act" id="votes-f-act" style="font-size:13px;font-weight:700;color:#e7e9ea;margin-top:2px;"></div>
+    <div class="votes-act" id="votes-f-lbl">votos válidos actuales</div>
+  </div>
+</div>
+
+<!-- ─── PROYECCIÓN ───────────────────────────────────────────── -->
+<div class="proy-card">
+  <div class="proy-title">Proyección al 100% de actas — Modelo GEMSES</div>
+
+  <div class="proy-row">
+    <!-- Univariado -->
+    <div class="proy-block">
+      <div class="proy-block-label">Modelo 1 · Univariado (OLS)</div>
+      <div class="proy-nums">
+        <span class="proy-pct-s" id="pu-s">—</span>
+        <span style="color:#5a6a7a;font-size:13px;align-self:center;">vs</span>
+        <span class="proy-pct-f" id="pu-f">—</span>
+      </div>
+      <div class="proy-ic" id="pu-ic"></div>
+      <div style="margin-top:6px;font-size:11px;" id="pu-ganador"></div>
+    </div>
+    <!-- Estratificado -->
+    <div class="proy-block" style="border:1px solid rgba(212,175,55,.3);">
+      <div class="proy-block-label">Modelo 2 · Estratificado ★ <span style="color:var(--gold)">RECOMENDADO</span></div>
+      <div class="proy-nums">
+        <span class="proy-pct-s" id="pe-s">—</span>
+        <span style="color:#5a6a7a;font-size:13px;align-self:center;">vs</span>
+        <span class="proy-pct-f" id="pe-f">—</span>
+      </div>
+      <div class="proy-ic" id="pe-ic"></div>
+      <div style="margin-top:6px;font-size:11px;" id="pe-ganador"></div>
     </div>
   </div>
+
+  <!-- Probabilidad Monte Carlo -->
   <div class="prob-wrap">
-    <div class="prob-label"><span>Probabilidad de victoria</span><span id="prob-txt"></span></div>
-    <div class="prob-bar"><div class="ps" id="prob-s" style="width:50%"></div><div class="pf" id="prob-f" style="width:50%"></div></div>
+    <div class="prob-labels">
+      <span>Probabilidad de victoria (Monte Carlo <span id="mc-n"></span> sims)</span>
+      <span id="prob-txt" style="font-weight:700;"></span>
+    </div>
+    <div class="prob-bar">
+      <div class="prob-s" id="prob-bar-s" style="width:50%;transition:.5s;"></div>
+      <div class="prob-f" id="prob-bar-f" style="width:50%;transition:.5s;"></div>
+    </div>
   </div>
+  <div class="empate-callout" id="empate-note"></div>
+</div>
 
-  <div class="eta-box" id="etabox" style="margin:0 18px 14px;background:#13202b;border:1px solid #243240;border-radius:12px;padding:14px;">
-    <div style="font-size:12px;color:#8b98a5;text-transform:uppercase;letter-spacing:1px;">⏱️ Estimación de cierre del conteo (100% de actas)</div>
-    <div id="eta-main" style="font-size:clamp(16px,4vw,22px);font-weight:800;color:#fff;margin-top:6px;">Calculando…</div>
-    <div id="eta-rate" style="font-size:12px;color:#aab8c2;margin-top:2px;"></div>
-    <div style="margin-top:10px;font-size:11px;color:#8b98a5;">Probabilidad de alcanzar el 100%:</div>
-    <div id="eta-prob" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"></div>
-  </div>
-  <div class="tv-foot">
-    <div class="model">Modelo de Excelencia «GEMSES» — Estadística predictiva estratificada</div>
-    <div class="meta" id="tvmeta">Mg. Carlos Pérez Pérez · investigador RENACYT</div>
-  </div>
-  <div class="scroll-hint">▼ Metodología, fórmulas y referencias abajo</div>
-</section>
+<!-- ─── TABLA ESTRATOS ───────────────────────────────────────── -->
+<div class="strat-card">
+  <div class="strat-title">Resultados por Estrato Geográfico</div>
+  <table class="strat-table">
+    <thead>
+      <tr>
+        <th>Estrato</th>
+        <th>Avance</th>
+        <th>Sánchez</th>
+        <th>Fujimori</th>
+        <th style="min-width:80px;">Distribución</th>
+      </tr>
+    </thead>
+    <tbody id="strat-body">
+      <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Cargando datos estratificados...</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:8px;font-size:10px;color:var(--muted);" id="strat-pesos"></div>
+</div>
 
-<div id="error" class="err" style="display:none">data.json aún no disponible. El scraper lo genera en su primera corrida.</div>
+<!-- ─── EVOLUCIÓN TEMPORAL ───────────────────────────────────── -->
+<div class="chart-card">
+  <div class="chart-title">Evolución temporal — % votos válidos</div>
+  <canvas id="evo"></canvas>
+</div>
 
+<div id="error" class="err" style="display:none">
+  ⚠ data.json no disponible aún. El scraper lo genera en su primera corrida.
+</div>
+
+<!-- ─── DOCUMENTO ACADÉMICO ──────────────────────────────────── -->
 <article class="doc">
   <h1>Proyección del resultado electoral al 100% de actas mediante modelos univariado y estratificado: aplicación del Modelo de Excelencia GEMSES a la Segunda Elección Presidencial del Perú 2026</h1>
-  <p style="color:#8b98a5;font-size:13px;">Mg. Carlos Pérez Pérez<sup>1</sup> · Investigador RENACYT · CIIDEG SAC · Lima, Perú</p>
+  <p style="color:var(--muted);font-size:12px;">Mg. Carlos Pérez Pérez<sup>1</sup> · Investigador RENACYT · CIIDEG SAC · Lima, Perú</p>
 
   <div class="abstract">
     <h3 style="margin-top:0">Resumen</h3>
-    <p><b>Objetivo:</b> proyectar el resultado final de la segunda vuelta presidencial 2026 a partir de datos parciales de la ONPE. <b>Métodos:</b> se comparan un modelo univariado de regresión lineal sobre el porcentaje global<sup>5</sup> y un modelo estratificado multivariado que descompone el voto en tres estratos (Lima, Fuera de Lima y Extranjero), con cuantificación de incertidumbre por simulación de Monte Carlo<sup>7</sup>. <b>Resultados:</b> el modelo univariado proyecta 50.11% para Sánchez; el estratificado, 49.91% (49.91% vs 50.09% a favor de Fujimori), con probabilidad de victoria de Fujimori ≈63%. <b>Conclusión:</b> la contienda constituye un empate técnico dentro del margen de error; el modelo estratificado es preferible por corregir el sesgo de selección de las actas pendientes.</p>
+    <p><b>Objetivo:</b> proyectar el resultado final de la segunda vuelta presidencial 2026 a partir de datos parciales de la ONPE. <b>Métodos:</b> se comparan un modelo univariado de regresión lineal sobre el porcentaje global<sup>5</sup> y un modelo estratificado multivariado que descompone el voto en tres estratos (Lima, Fuera de Lima y Extranjero), con cuantificación de incertidumbre por simulación de Monte Carlo (N=20 000)<sup>7</sup>. <b>Resultados:</b> el modelo univariado proyecta 50.108% para Sánchez; el estratificado, 49.906% vs 50.094% a favor de Fujimori, con probabilidad de victoria de Fujimori ≈63%. <b>Conclusión:</b> la contienda constituye un empate técnico dentro del margen de error; el modelo estratificado es preferible por corregir el sesgo de selección de las actas pendientes.</p>
   </div>
 
   <h1>1. Introducción</h1>
@@ -143,227 +284,328 @@
   <p>Este trabajo aplica los principios del Modelo de Excelencia GEMSES<sup>8</sup> —concebido originalmente para la gestión por procesos en servicios de salud— a la estimación electoral, trasladando la lógica de estratificación y control de variabilidad al pronóstico de votos.</p>
 
   <h1>2. Materiales y métodos</h1>
-  <h2>2.1 Fuente de datos</h2>
-  <p>Serie temporal de cortes oficiales de la ONPE publicados entre el 7 y 10 de junio de 2026, contrastados con reportes de prensa verificados.<sup>1,2</sup> El último corte (97.83% de actas) registra a Sánchez con 9 013 284 votos (50.017%) y a Fujimori con 9 007 157 (49.983%).</p>
+  <h2>2.1 Modelo 1 — Univariado (OLS)</h2>
+  <p>Se ajusta por mínimos cuadrados ordinarios el porcentaje de Sánchez \(y\) como función del avance \(a\) (% de actas):</p>
+  <div class="formula">$$\hat{y}(a)=\beta_0+\beta_1 a,\quad \beta_1=\frac{\sum_i (a_i-\bar a)(y_i-\bar y)}{\sum_i (a_i-\bar a)^2},\quad \text{IC}_{95\%}:\;\hat y(100)\pm t_{0.975}\,s\sqrt{1+\tfrac{1}{n}+\tfrac{(100-\bar a)^2}{\sum(a_i-\bar a)^2}}$$</div>
 
-  <h2>2.2 Modelo 1 — Univariado (extrapolación del global)</h2>
-  <p>Se ajusta por mínimos cuadrados ordinarios<sup>5</sup> el porcentaje de Sánchez \(y\) como función del avance \(a\) (% de actas):</p>
-  <div class="formula">$$\hat{y}(a)=\beta_0+\beta_1 a,\qquad \beta_1=\frac{\sum_i (a_i-\bar a)(y_i-\bar y)}{\sum_i (a_i-\bar a)^2},\qquad \beta_0=\bar y-\beta_1\bar a$$</div>
-  <p>La proyección al cierre es \(\hat y(100)\). Su incertidumbre se expresa mediante el <b>intervalo de predicción</b> al 95%<sup>5</sup>:</p>
-  <div class="formula">$$\hat{y}(100)\;\pm\; t_{0.975,\,n-2}\;s\sqrt{1+\frac{1}{n}+\frac{(100-\bar a)^2}{\sum_i (a_i-\bar a)^2}}$$</div>
-  <p>donde \(s\) es el error estándar residual y \(t\) el cuantil de la distribución t de Student con \(n-2\) grados de libertad.</p>
-
-  <h2>2.3 Modelo 2 — Estratificado multivariado</h2>
-  <p>El resultado final se estima como combinación ponderada de la proporción proyectada en cada estrato<sup>3,4</sup>:</p>
-  <div class="formula">$$\hat{S}_{\text{final}}=\sum_{k}w_k\,p_k,\qquad w_k=\frac{V_k}{\sum_j V_j},\qquad V_k=\frac{v_k}{a_k}$$</div>
-  <p>con \(k\in\{\text{Lima, Fuera de Lima, Extranjero}\}\); \(p_k\) = proporción de Sánchez en el estrato; \(v_k\) = votos válidos actuales del estrato; \(a_k\) = avance del estrato; \(V_k\) = votos válidos proyectados al 100%; \(w_k\) = peso del estrato.</p>
-
-  <h2>2.4 Cuantificación de incertidumbre (Monte Carlo)</h2>
-  <p>Se ejecutaron \(N=20\,000\) simulaciones<sup>6,7</sup> perturbando cada proporción según su grado de avance:</p>
-  <div class="formula">$$p_k^{(\text{sim})}\sim \mathcal{N}(p_k,\sigma_k^2),\quad \sigma_{\text{Lima}}=0.30\%,\;\sigma_{\text{Resto}}=0.40\%,\;\sigma_{\text{Ext}}=2.0\%$$</div>
-  <p>La probabilidad de victoria es la fracción de simulaciones en que \(\hat S_{\text{final}}>0.5\), y el intervalo de confianza al 95% son los percentiles 2.5 y 97.5 de la distribución resultante.</p>
+  <h2>2.2 Modelo 2 — Estratificado multivariado + Monte Carlo</h2>
+  <div class="formula">$$\hat{S}_{\text{final}}=\sum_{k}w_k\,p_k,\quad w_k=\frac{V_k}{\sum_j V_j},\quad V_k=\frac{v_k}{a_k}$$</div>
+  <p>con \(k\in\{\text{Lima, Fuera de Lima, Extranjero}\}\). Incertidumbre por Monte Carlo (N=20 000):</p>
+  <div class="formula">$$p_k^{(\text{sim})}\sim \mathcal{N}(p_k,\sigma_k^2),\;\; \sigma_{\text{Lima}}=0.30\%,\;\sigma_{\text{Resto}}=0.40\%,\;\sigma_{\text{Ext}}=2.0\%$$</div>
 
   <h1>3. Resultados</h1>
-  <h2>3.1 Datos por estrato</h2>
+  <h2>3.1 Datos por estrato (último corte)</h2>
   <table class="t">
     <tr><th>Estrato</th><th>Avance</th><th>Sánchez</th><th>Fujimori</th><th>Peso w<sub>k</sub></th></tr>
-    <tr><td>Lima</td><td>96.9%</td><td class="s-c">36.50%</td><td class="f-c">63.50%</td><td>34.76%</td></tr>
-    <tr><td>Fuera de Lima</td><td>98.5%</td><td class="s-c">57.58%</td><td class="f-c">42.42%</td><td>63.59%</td></tr>
-    <tr><td>Extranjero</td><td>83.5%</td><td class="s-c">36.64%</td><td class="f-c">63.36%</td><td>1.64%</td></tr>
+    <tr><td>Lima</td><td>96.9%</td><td class="pct-s">36.50%</td><td class="pct-f">63.50%</td><td>34.76%</td></tr>
+    <tr><td>Fuera de Lima</td><td>98.5%</td><td class="pct-s">57.58%</td><td class="pct-f">42.42%</td><td>63.59%</td></tr>
+    <tr><td>Extranjero</td><td>83.5%</td><td class="pct-s">36.64%</td><td class="pct-f">63.36%</td><td>1.64%</td></tr>
   </table>
   <h2>3.2 Proyecciones</h2>
   <table class="t">
-    <tr><th>Modelo</th><th>Sánchez 100%</th><th>Fujimori 100%</th><th>Ganador</th></tr>
-    <tr><td>1 · Univariado</td><td class="s-c">50.108%</td><td class="f-c">49.892%</td><td>Sánchez</td></tr>
-    <tr><td>2 · Estratificado ★</td><td class="s-c">49.906%</td><td class="f-c">50.094%</td><td>Fujimori</td></tr>
+    <tr><th>Modelo</th><th>Sánchez 100%</th><th>Fujimori 100%</th><th>IC 95%</th><th>Ganador</th></tr>
+    <tr><td>1 · Univariado</td><td class="pct-s">50.108%</td><td class="pct-f">49.892%</td><td>[49.920; 50.295]</td><td>Sánchez</td></tr>
+    <tr><td>2 · Estratificado ★</td><td class="pct-s">49.906%</td><td class="pct-f">50.094%</td><td>[49.364; 50.443]</td><td>Fujimori</td></tr>
   </table>
-  <div class="chart-box"><canvas id="evo"></canvas></div>
-  <h2>3.3 Margen de error</h2>
   <table class="t">
     <tr><th>Medida</th><th>Valor</th></tr>
-    <tr><td>IC 95% univariado (Sánchez)</td><td>[49.920% ; 50.295%]</td></tr>
-    <tr><td>IC 95% estratificado (Sánchez)</td><td>[49.364% ; 50.443%]</td></tr>
-    <tr><td>P(gana Fujimori) — Monte Carlo</td><td class="f-c">63.3%</td></tr>
-    <tr><td>P(gana Sánchez) — Monte Carlo</td><td class="s-c">36.7%</td></tr>
-    <tr><td>Margen proyectado (Modelo 2)</td><td>0.189 puntos</td></tr>
+    <tr><td>P(gana Fujimori) — Monte Carlo</td><td class="pct-f">63.3%</td></tr>
+    <tr><td>P(gana Sánchez) — Monte Carlo</td><td class="pct-s">36.7%</td></tr>
+    <tr><td>Margen proyectado (Modelo 2)</td><td>0.189 puntos porcentuales</td></tr>
   </table>
   <div class="callout">⚖️ <b>El margen proyectado (0.19 pts) es menor que la amplitud del intervalo de confianza (~1.1 pts).</b> Estadísticamente esto es un <b>empate técnico</b>: ningún modelo puede declarar un ganador con certeza antes del cómputo oficial al 100%.</div>
 
-  <h1>4. Discusión</h1>
-  <p>La discrepancia entre ambos modelos no es un defecto sino un resultado informativo. El modelo univariado<sup>5</sup> presenta un \(R^2=0.22\), evidencia de que el porcentaje global es un predictor ruidoso porque agrega estratos heterogéneos. El modelo estratificado<sup>3,4</sup> corrige el sesgo al reconocer que las actas pendientes —en particular el voto del extranjero, con 63% pro-Fujimori y solo 83.5% contabilizado— no son representativas del universo ya contado.</p>
-  <p>Este principio es homólogo al control de variabilidad por unidades del Modelo GEMSES<sup>8</sup>: medir el agregado oculta el comportamiento diferenciado de cada subproceso.</p>
-
-  <h1>5. Limitaciones</h1>
-  <p>Los pesos asumen homogeneidad del voto pendiente dentro de cada estrato; no se modelan explícitamente las actas observadas ni las derivadas al Jurado Electoral Especial, relevantes en una contienda ajustada. La proyección es un ejercicio analítico; el resultado oficial corresponde a la ONPE y su proclamación al JNE, prevista para mediados de julio de 2026.<sup>2</sup></p>
-
-  <h1>6. Conclusiones</h1>
-  <p>Bajo el Modelo de Excelencia GEMSES, la Segunda Elección Presidencial 2026 se proyecta como un empate técnico con leve ventaja de Fujimori (50.09% vs 49.91%, probabilidad ≈63%). El enfoque estratificado es metodológicamente superior al univariado por incorporar la estructura geográfica del voto pendiente.</p>
+  <h1>4. Discusión y Conclusiones</h1>
+  <p>La discrepancia entre ambos modelos no es un defecto sino un resultado informativo. El modelo univariado presenta un R²≈0.22, evidenciando que el porcentaje global es un predictor ruidoso porque agrega estratos heterogéneos. El modelo estratificado corrige el sesgo al reconocer que las actas pendientes —en particular el voto del extranjero con 63% pro-Fujimori y sólo 83.5% contabilizado— no son representativas del universo ya contado. Este principio es homólogo al control de variabilidad por unidades del Modelo GEMSES<sup>8</sup>: medir el agregado oculta el comportamiento diferenciado de cada subproceso.</p>
 
   <div class="author-card">
-    <div style="font-size:15px;color:var(--gold);font-weight:700;">Modelo de Excelencia «GEMSES»</div>
+    <div style="font-size:14px;color:var(--gold);font-weight:700;">Modelo de Excelencia «GEMSES»</div>
     <div style="margin-top:6px;font-weight:700;color:#fff;">Mg. Carlos Pérez Pérez</div>
-    <div style="font-size:13px;color:#8b98a5;">Investigador RENACYT · Autor del Modelo GEMSES (Patente WIPO PE324096539)</div>
-    <div style="font-size:13px;color:#8b98a5;">CIIDEG SAC · informes.ciideg@gmail.com</div>
+    <div style="font-size:12px;color:var(--muted);">Investigador RENACYT · Autor del Modelo GEMSES (Patente WIPO PE324096539)</div>
+    <div style="font-size:12px;color:var(--muted);">CIIDEG SAC · informes.ciideg@gmail.com</div>
   </div>
 
   <h1>7. Referencias (Vancouver)</h1>
   <div class="refs">
-    <div class="r">Oficina Nacional de Procesos Electorales (ONPE). Presentación de resultados: Segunda Elección Presidencial 2026 [Internet]. Lima: ONPE; 2026 [citado 10 jun 2026]. Disponible en: https://resultadosegundavuelta.onpe.gob.pe/main/resumen</div>
-    <div class="r">El Comercio. Resultados segunda vuelta Elecciones Perú 2026: conteo oficial ONPE en vivo [Internet]. Lima: El Comercio; 2026 [citado 10 jun 2026]. Disponible en: https://elcomercio.pe/politica/elecciones/</div>
+    <div class="r">Oficina Nacional de Procesos Electorales (ONPE). Presentación de resultados: Segunda Elección Presidencial 2026 [Internet]. Lima: ONPE; 2026.</div>
+    <div class="r">El Comercio. Resultados segunda vuelta Elecciones Perú 2026: conteo oficial ONPE en vivo [Internet]. Lima: El Comercio; 2026.</div>
     <div class="r">Cochran WG. Sampling Techniques. 3.ª ed. Nueva York: John Wiley &amp; Sons; 1977.</div>
     <div class="r">Lohr SL. Sampling: Design and Analysis. 2.ª ed. Boca Raton: CRC Press; 2010.</div>
-    <div class="r">Montgomery DC, Peck EA, Vining GG. Introduction to Linear Regression Analysis. 5.ª ed. Hoboken: John Wiley &amp; Sons; 2012.</div>
+    <div class="r">Montgomery DC, Peck EA, Vining GG. Introduction to Linear Regression Analysis. 5.ª ed. Hoboken: Wiley; 2012.</div>
     <div class="r">Metropolis N, Ulam S. The Monte Carlo method. J Am Stat Assoc. 1949;44(247):335-41.</div>
     <div class="r">Robert CP, Casella G. Monte Carlo Statistical Methods. 2.ª ed. Nueva York: Springer; 2004.</div>
     <div class="r">Pérez Pérez C. Modelo GEMSES: gestión moderna de los servicios de salud. Iberoamerican Business Journal. 2021;5(1):4-27.</div>
-    <div class="r">Gelman A, King G. Why are American presidential election campaign polls so variable when votes are so predictable? Br J Polit Sci. 1993;23(4):409-51.</div>
   </div>
-  <p style="font-size:11px;color:#5a6b7a;margin-top:16px;">Documento generado desde datos ONPE. Las cifras se actualizan con cada corrida del sistema. Estilo de referenciación: Uniform Requirements / Vancouver.</p>
+  <p style="font-size:10px;color:#5a6a7a;margin-top:14px;">Cifras actualizadas automáticamente con cada corrida del scraper. Estilo Vancouver.</p>
 </article>
 
 <script>
-let chart=null;
-function fmt(n){ return n==null?"—":Number(n).toLocaleString("es-PE"); }
-async function cargar(){
-  try{
-    let d;
-    if(window.__ONPE_DATA__){ d=window.__ONPE_DATA__; }
-    else{ const r=await fetch("data.json?t="+Date.now()); if(!r.ok) throw 0; d=await r.json(); }
+// ─── FORMATO ─────────────────────────────────────────────────
+const fmt   = n => n == null ? "—" : Number(n).toLocaleString("es-PE");
+const fmtP  = n => n == null ? "—" : Number(n).toFixed(3) + "%";
+const fmtP2 = n => n == null ? "—" : Number(n).toFixed(2) + "%";
+
+let chart = null;
+
+// ─── CARGA DE DATOS ──────────────────────────────────────────
+async function cargar() {
+  try {
+    const r = await fetch("data.json?t=" + Date.now());
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
     render(d);
-    document.getElementById("error").style.display="none";
-  }catch(e){ document.getElementById("error").style.display="block"; }
+    document.getElementById("error").style.display = "none";
+  } catch (e) {
+    document.getElementById("error").style.display = "block";
+    console.error("Error cargando data.json:", e);
+  }
 }
-function modelos(d){
-  const a=d.actual||{}, nac=a.nacional||{}, s=nac.sanchez||{}, f=nac.fujimori||{};
-  const sLima=((a.lima&&a.lima.sanchez&&a.lima.sanchez.pct_validos)||36.5)/100;
-  const sExt =((a.extranjero&&a.extranjero.sanchez&&a.extranjero.sanchez.pct_validos)||36.64)/100;
-  // "resto" = fuera de Lima; respaldo correcto 57.58%
-  const restoObj = a.resto || a.peru || {};
-  const sResto=((restoObj.sanchez&&restoObj.sanchez.pct_validos)||57.58)/100;
-  const wL=0.3476,wR=0.6359,wE=0.0164;
-  const Sf=wL*sLima+wR*sResto+wE*sExt;
-  return { S:Sf*100, F:(1-Sf)*100, ganaS:Sf>0.5, nac,s,f };
+
+// ─── RENDER PRINCIPAL ────────────────────────────────────────
+function render(d) {
+  const meta = d.meta || {};
+  const nac  = d.nacional || {};
+  const s    = nac.sanchez  || {};
+  const f    = nac.fujimori || {};
+  const proy = d.proyeccion || {};
+  const pe   = proy.estratificado || {};
+  const pu   = proy.univariado    || {};
+
+  // ── Top bar timestamp ──
+  const ts = meta.ultima_actualizacion || "";
+  document.getElementById("ts-bar").textContent =
+    ts ? "Actualizado: " + ts : "Sin timestamp";
+
+  // ── Barra de actas ──
+  const avance = meta.pct_avance || nac.pct_avance || 0;
+  document.getElementById("actas-pct").textContent  = fmtP(avance);
+  document.getElementById("actas-fill").style.width = Math.min(avance, 100) + "%";
+  if (meta.actas_contabilizadas && meta.actas_totales) {
+    document.getElementById("actas-count").textContent =
+      "(" + fmt(meta.actas_contabilizadas) + " / " + fmt(meta.actas_totales) + ")";
+  }
+
+  // ── Candidatos: porcentaje actual + votos actuales ──
+  const sPct = s.pct_validos;
+  const fPct = f.pct_validos;
+  const ganaS = (sPct || 0) >= (fPct || 0);
+
+  document.getElementById("pct-s-act").textContent = fmtP(sPct);
+  document.getElementById("pct-f-act").textContent = fmtP(fPct);
+  document.getElementById("votes-s-act").textContent =
+    s.votos ? fmt(s.votos) + " votos" : "";
+  document.getElementById("votes-f-act").textContent =
+    f.votos ? fmt(f.votos) + " votos" : "";
+
+  // Ganador actual (quién va adelante en el recuento parcial)
+  document.getElementById("cand-s").classList.toggle("win",  ganaS);
+  document.getElementById("cand-f").classList.toggle("win", !ganaS);
+
+  // ── Proyección estratificada (RECOMENDADA) ──
+  const peS = pe.sanchez_pct;
+  const peF = pe.fujimori_pct;
+  const ganaPe = (peS || 0) > (peF || 0);
+  document.getElementById("pe-s").textContent = fmtP(peS);
+  document.getElementById("pe-f").textContent = fmtP(peF);
+  if (pe.ic_inf != null && pe.ic_sup != null) {
+    document.getElementById("pe-ic").textContent =
+      "IC 95%: [" + fmtP(pe.ic_inf) + " ; " + fmtP(pe.ic_sup) + "]";
+  }
+  document.getElementById("pe-ganador").innerHTML = ganaPe
+    ? '<span class="proy-tag tag-s">→ Sánchez</span>'
+    : '<span class="proy-tag tag-f">→ Fujimori</span>';
+
+  // ── Proyección univariada ──
+  const puS = pu.sanchez_pct;
+  const puF = pu.fujimori_pct;
+  const ganaPu = (puS || 0) > (puF || 0);
+  document.getElementById("pu-s").textContent = fmtP(puS);
+  document.getElementById("pu-f").textContent = fmtP(puF);
+  if (pu.ic_inf != null && pu.ic_sup != null) {
+    document.getElementById("pu-ic").textContent =
+      "IC 95%: [" + fmtP(pu.ic_inf) + " ; " + fmtP(pu.ic_sup) + "]";
+  }
+  document.getElementById("pu-ganador").innerHTML = ganaPu
+    ? '<span class="proy-tag tag-s">→ Sánchez</span>'
+    : '<span class="proy-tag tag-f">→ Fujimori</span>';
+
+  // ── Ganador proyectado badge (usa modelo estratificado) ──
+  document.getElementById("badge-s").style.display =  ganaPe ? "block" : "none";
+  document.getElementById("badge-f").style.display = !ganaPe ? "block" : "none";
+
+  // ── Probabilidades Monte Carlo ──
+  const probS = pe.prob_sanchez  || 50;
+  const probF = pe.prob_fujimori || 50;
+  document.getElementById("prob-bar-s").style.width = probS + "%";
+  document.getElementById("prob-bar-f").style.width = probF + "%";
+  document.getElementById("prob-txt").innerHTML =
+    '<span style="color:var(--green)">' + probS.toFixed(1) + "% S</span>" +
+    " · " +
+    '<span style="color:var(--orange)">' + probF.toFixed(1) + "% F</span>";
+  if (pe.n_sim) document.getElementById("mc-n").textContent = fmt(pe.n_sim);
+
+  // ── Callout empate ──
+  const margen = peS != null && peF != null ? Math.abs(peS - peF) : null;
+  const ic_amp = pe.ic_sup != null && pe.ic_inf != null ? (pe.ic_sup - pe.ic_inf) : null;
+  const esEmpate = margen != null && ic_amp != null && margen < ic_amp;
+  document.getElementById("empate-note").textContent = esEmpate
+    ? "⚖️ EMPATE TÉCNICO: el margen proyectado (" + fmtP(margen) +
+      ") es menor que la amplitud del IC 95% (" + fmtP(ic_amp) +
+      "). No es posible declarar ganador con certeza estadística."
+    : "";
+
+  // ── Tabla de estratos ──
+  renderStratos(d);
+
+  // ── Gráfico evolución ──
+  renderChart(d, peS, peF);
 }
-function render(d){
-  const m=modelos(d);
-  document.getElementById("pct-s").textContent=m.S.toFixed(2)+"%";
-  document.getElementById("pct-f").textContent=m.F.toFixed(2)+"%";
-  document.getElementById("votes-s").textContent=m.s.votos?fmt(m.s.votos)+" votos (obs.)":"";
-  document.getElementById("votes-f").textContent=m.f.votos?fmt(m.f.votos)+" votos (obs.)":"";
-  document.getElementById("badge-s").style.display=m.ganaS?"block":"none";
-  document.getElementById("badge-f").style.display=m.ganaS?"none":"block";
-  document.getElementById("cand-s").classList.toggle("win",m.ganaS);
-  document.getElementById("cand-f").classList.toggle("win",!m.ganaS);
-  const pS=m.ganaS?63:37, pF=100-pS;
-  document.getElementById("prob-s").style.width=pS+"%";
-  document.getElementById("prob-f").style.width=pF+"%";
-  document.getElementById("prob-txt").textContent="Sánchez "+pS+"% · Fujimori "+pF+"%";
-  document.getElementById("tvsub").textContent="Proyección al 100% · "+(d.ultima_actualizacion||"");
 
-  // ===== ETA al 100% =====
-  calcularETA(d);
+// ─── TABLA ESTRATOS ─────────────────────────────────────────
+function renderStratos(d) {
+  const tbody = document.getElementById("strat-body");
+  const pe    = (d.proyeccion || {}).estratificado || {};
+  const stratos = [
+    { nombre: "Lima",          key: "lima",       icon: "🏙️" },
+    { nombre: "Fuera de Lima", key: "resto",      icon: "🌄" },
+    { nombre: "Extranjero",    key: "extranjero", icon: "✈️" },
+    { nombre: "NACIONAL",      key: "nacional",   icon: "🇵🇪", total: true },
+  ];
 
-  // ===== Gráfico: zona REAL vs zona PROYECTADA =====
-  const hist=(d.historial||[]);
-  const labels=hist.map(h=>h.hora||h.ts);
-  const sReal=hist.map(h=>h.sanchez_pct);
-  const fReal=hist.map(h=>h.fujimori_pct);
-  // Añadir punto proyectado al 100%
-  labels.push("PROY 100%");
-  // arrays reales con null en el punto proyectado, y arrays proyectados solo en el último tramo
-  const lastIdx = sReal.length; // índice del nuevo punto
-  const sRealPlot = [...sReal, null];
-  const fRealPlot = [...fReal, null];
-  // segmento proyectado: conecta último real con proyección
-  const sProj = sReal.map(()=>null); sProj[sReal.length-1]=sReal[sReal.length-1]; sProj.push(m.S);
-  const fProj = fReal.map(()=>null); fProj[fReal.length-1]=fReal[fReal.length-1]; fProj.push(m.F);
+  const pesos = pe.pesos || {};
+  let html = "";
 
-  // Plugin: pinta fondo distinto en zona REAL (azul) y zona PROYECTADA (dorado)
-  const zonas={ id:"zonas", beforeDraw(chart){
-    const {ctx,chartArea:{top,bottom},scales:{x}}=chart;
-    const n=chart.data.labels.length; if(n<2) return;
-    const xReal0=x.getPixelForValue(0), xRealF=x.getPixelForValue(n-2), xProj=x.getPixelForValue(n-1);
-    ctx.save();
-    ctx.fillStyle="rgba(26,77,122,0.10)"; ctx.fillRect(xReal0,top,xRealF-xReal0,bottom-top); // zona real
-    ctx.fillStyle="rgba(212,175,55,0.14)"; ctx.fillRect(xRealF,top,xProj-xRealF,bottom-top);   // zona proyectada
-    ctx.restore();
-  }};
+  for (const e of stratos) {
+    const dat = d[e.key];
+    if (!dat) continue;
+    const sP   = dat.sanchez  ? dat.sanchez.pct_validos   : null;
+    const fP   = dat.fujimori ? dat.fujimori.pct_validos  : null;
+    const sV   = dat.sanchez  ? dat.sanchez.votos         : null;
+    const fV   = dat.fujimori ? dat.fujimori.votos        : null;
+    const av   = dat.pct_avance != null ? dat.pct_avance  : null;
+    const peso = pesos[e.key] != null ? fmtP2(pesos[e.key]) : "";
+    const rowStyle = e.total
+      ? "background:rgba(26,77,122,.15);font-weight:700;"
+      : "";
 
-  if(chart) chart.destroy();
-  chart=new Chart(document.getElementById("evo"),{
-    type:"line",
-    data:{ labels, datasets:[
-      {label:"Sánchez (real)",data:sRealPlot,borderColor:"#2ecc71",backgroundColor:"transparent",tension:.3,spanGaps:false},
-      {label:"Fujimori (real)",data:fRealPlot,borderColor:"#ff8c42",backgroundColor:"transparent",tension:.3,spanGaps:false},
-      {label:"Sánchez (proy.)",data:sProj,borderColor:"#2ecc71",borderDash:[6,4],backgroundColor:"transparent",pointStyle:"rectRot",pointRadius:5,spanGaps:true},
-      {label:"Fujimori (proy.)",data:fProj,borderColor:"#ff8c42",borderDash:[6,4],backgroundColor:"transparent",pointStyle:"rectRot",pointRadius:5,spanGaps:true},
-    ]},
-    options:{ responsive:true,
-      plugins:{ legend:{labels:{color:"#e7e9ea",font:{size:10},boxWidth:14}},
-        tooltip:{callbacks:{title:(t)=>t[0].label==="PROY 100%"?"Proyección GEMSES al 100%":t[0].label}} },
-      scales:{ x:{ticks:{color:"#8b98a5",maxRotation:45,font:{size:9}},grid:{color:"#1a2530"}},
-               y:{ticks:{color:"#8b98a5"},grid:{color:"#1a2530"},min:35,max:65}}},
-    plugins:[zonas]
+    html += `<tr style="${rowStyle}">
+      <td>${e.icon} ${e.nombre}${peso ? ' <span style="font-size:10px;color:var(--muted)">w=' + peso + '</span>' : ""}</td>
+      <td class="avance-pct">${av != null ? fmtP(av) : "—"}</td>
+      <td>
+        <span class="pct-s">${fmtP(sP)}</span>
+        ${sV ? '<div style="font-size:10px;color:var(--muted);">' + fmt(sV) + '</div>' : ""}
+      </td>
+      <td>
+        <span class="pct-f">${fmtP(fP)}</span>
+        ${fV ? '<div style="font-size:10px;color:var(--muted);">' + fmt(fV) + '</div>' : ""}
+      </td>
+      <td>
+        ${sP != null ? `<div class="bar-mini"><div class="bar-s" style="width:${Math.max(0,Math.min(100,sP))}%"></div></div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">${sP > fP ? "▲ S" : "▲ F"}</div>` : ""}
+      </td>
+    </tr>`;
+  }
+
+  tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px;">Datos estratificados no disponibles aún (se obtienen en la próxima corrida del scraper)</td></tr>';
+
+  // Mostrar pesos si los hay
+  if (pesos.lima) {
+    document.getElementById("strat-pesos").textContent =
+      `Pesos proyectados: Lima ${fmtP2(pesos.lima)} · Fuera de Lima ${fmtP2(pesos.resto)} · Extranjero ${fmtP2(pesos.extranjero)}`;
+  }
+}
+
+// ─── GRÁFICO EVOLUCIÓN ───────────────────────────────────────
+function renderChart(d, peS, peF) {
+  const hist = (d.historial || []).filter(h => h.actas != null && h.sanchez_pct != null);
+  if (hist.length < 2) return;
+
+  const labels   = hist.map(h => h.hora || h.ts || "");
+  const sReal    = hist.map(h => h.sanchez_pct);
+  const fReal    = hist.map(h => h.fujimori_pct);
+
+  // Punto proyectado al 100%
+  const hasProj = peS != null && peF != null;
+  if (hasProj) {
+    labels.push("PROY 100%");
+    // Segmentos proyectados: null hasta el penúltimo, luego conecta
+    const lastS = sReal[sReal.length - 1];
+    const lastF = fReal[fReal.length - 1];
+    const sProj = [...sReal.map(() => null), peS];
+    const fProj = [...fReal.map(() => null), peF];
+    sProj[sReal.length - 1] = lastS;
+    fProj[fReal.length - 1] = lastF;
+    sReal.push(null);
+    fReal.push(null);
+
+    drawChart(labels, sReal, fReal, sProj, fProj);
+  } else {
+    drawChart(labels, sReal, fReal, null, null);
+  }
+}
+
+function drawChart(labels, sReal, fReal, sProj, fProj) {
+  const zonas = {
+    id: "zonas",
+    beforeDraw(ch) {
+      const {ctx, chartArea:{top,bottom}, scales:{x}} = ch;
+      const n = ch.data.labels.length;
+      if (n < 2) return;
+      const xR0  = x.getPixelForValue(0);
+      const xRF  = x.getPixelForValue(n - 2);
+      const xP   = x.getPixelForValue(n - 1);
+      ctx.save();
+      ctx.fillStyle = "rgba(26,77,122,.09)";
+      ctx.fillRect(xR0, top, xRF - xR0, bottom - top);
+      ctx.fillStyle = "rgba(212,175,55,.12)";
+      ctx.fillRect(xRF, top, xP - xRF, bottom - top);
+      ctx.restore();
+    }
+  };
+
+  const datasets = [
+    {label:"Sánchez (actual)", data:sReal, borderColor:"#2ecc71", backgroundColor:"transparent",
+     tension:.3, spanGaps:false, pointRadius:3},
+    {label:"Fujimori (actual)", data:fReal, borderColor:"#ff8c42", backgroundColor:"transparent",
+     tension:.3, spanGaps:false, pointRadius:3},
+  ];
+  if (sProj) {
+    datasets.push(
+      {label:"Sánchez (proy.)", data:sProj, borderColor:"#2ecc71", borderDash:[6,4],
+       backgroundColor:"transparent", pointStyle:"rectRot", pointRadius:5, spanGaps:true},
+      {label:"Fujimori (proy.)", data:fProj, borderColor:"#ff8c42", borderDash:[6,4],
+       backgroundColor:"transparent", pointStyle:"rectRot", pointRadius:5, spanGaps:true}
+    );
+  }
+
+  if (chart) chart.destroy();
+  chart = new Chart(document.getElementById("evo"), {
+    type: "line",
+    data: {labels, datasets},
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {labels:{color:"#e7e9ea", font:{size:10}, boxWidth:14}},
+        tooltip: {
+          callbacks: {
+            title: t => t[0].label === "PROY 100%" ? "Proyección GEMSES al 100%" : t[0].label,
+            label: ctx => " " + ctx.dataset.label + ": " + (ctx.raw != null ? ctx.raw.toFixed(3) + "%" : "—"),
+          }
+        }
+      },
+      scales: {
+        x: {ticks:{color:"#8b98a5", maxRotation:40, font:{size:9}}, grid:{color:"#1a2530"}},
+        y: {ticks:{color:"#8b98a5", callback:v=>v.toFixed(1)+"%"}, grid:{color:"#1a2530"},
+            min:35, max:65}
+      }
+    },
+    plugins: [zonas],
   });
 }
 
-// ===== ESTIMACIÓN DE TIEMPO AL 100% (ETA) =====
-function calcularETA(d){
-  const hist=(d.historial||[]).filter(h=>h.actas!=null && h.ts);
-  const main=document.getElementById("eta-main");
-  const rate=document.getElementById("eta-rate");
-  const probDiv=document.getElementById("eta-prob");
-  if(hist.length<3){ main.textContent="Datos insuficientes"; return; }
-  // pares (tiempo en horas, actas%)
-  const t0=new Date(hist[0].ts).getTime();
-  const pts=hist.map(h=>({t:(new Date(h.ts).getTime()-t0)/3.6e6, a:h.actas}));
-  // tasa reciente: usar últimos min(6, n) puntos
-  const w=Math.min(6,pts.length);
-  const rec=pts.slice(-w);
-  // regresión lineal actas = b0 + b1*t
-  const n=rec.length, mt=rec.reduce((s,p)=>s+p.t,0)/n, ma=rec.reduce((s,p)=>s+p.a,0)/n;
-  let sxy=0,sxx=0; rec.forEach(p=>{sxy+=(p.t-mt)*(p.a-ma); sxx+=(p.t-mt)**2;});
-  let b1= sxx>0 ? sxy/sxx : 0;            // %/hora
-  const actual=pts[pts.length-1].a;
-  const restante=100-actual;
-  // variabilidad de la tasa (desviación de deltas)
-  const deltas=[]; for(let i=1;i<rec.length;i++){ const dt=rec[i].t-rec[i-1].t; if(dt>0) deltas.push((rec[i].a-rec[i-1].a)/dt); }
-  const mRate=deltas.length?deltas.reduce((s,x)=>s+x,0)/deltas.length:b1;
-  const sd=deltas.length>1?Math.sqrt(deltas.reduce((s,x)=>s+(x-mRate)**2,0)/(deltas.length-1)):Math.abs(mRate)*0.5;
-
-  rate.textContent="Ritmo reciente: "+(mRate>=0?"+":"")+mRate.toFixed(4)+" % actas/hora · faltan "+restante.toFixed(3)+"%";
-
-  if(mRate<=0.0005){
-    main.innerHTML="⏸️ El conteo está prácticamente <b>detenido</b> (actas observadas/JEE)";
-    main.style.color="#ff8c42";
-  } else {
-    const etaH=restante/mRate;
-    let txt;
-    if(etaH<24) txt=etaH.toFixed(1)+" horas";
-    else txt=(etaH/24).toFixed(1)+" días";
-    main.innerHTML="≈ "+txt+" al ritmo actual";
-    main.style.color="#fff";
-  }
-
-  // Monte Carlo: P(llegar al 100% en <24h / <3d / >3d)
-  let c24=0,c3d=0,cmas=0; const N=5000;
-  for(let i=0;i<N;i++){
-    const r=mRate + (Math.random()*2-1)*sd; // ritmo simulado
-    if(r<=0.0005){ cmas++; continue; }
-    const h=restante/r;
-    if(h<24) c24++; else if(h<72) c3d++; else cmas++;
-  }
-  const buckets=[
-    {l:"≤ 24 h", p:Math.round(100*c24/N), c:"#2ecc71"},
-    {l:"1–3 días", p:Math.round(100*c3d/N), c:"#d4af37"},
-    {l:"> 3 días / vía JNE", p:Math.round(100*cmas/N), c:"#ff8c42"},
-  ];
-  probDiv.innerHTML=buckets.map(b=>`<div style="flex:1;min-width:90px;background:#0f1720;border-radius:8px;padding:8px;text-align:center;border-top:3px solid ${b.c};">
-    <div style="font-size:18px;font-weight:800;color:${b.c};">${b.p}%</div>
-    <div style="font-size:10px;color:#8b98a5;">${b.l}</div></div>`).join("");
-}
+// ─── INIT ────────────────────────────────────────────────────
 cargar();
-setInterval(cargar,5*60*1000);
+setInterval(cargar, 5 * 60 * 1000);   // re-carga cada 5 min
 </script>
 </body>
 </html>
