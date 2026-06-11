@@ -1,33 +1,33 @@
 {
   "meta": {
-    "ultima_actualizacion": "11/06/2026 04:55 (desde ONPE)",
-    "pct_avance": 98.346,
-    "actas_contabilizadas": 91265,
+    "ultima_actualizacion": "11/06/2026 08:20:26 A. M.",
+    "pct_avance": 98.216,
+    "actas_contabilizadas": 91111,
     "actas_totales": 92766,
     "fuente": "onpe_html"
   },
   "nacional": {
-    "pct_avance": 98.346,
-    "actas_contabilizadas": 91265,
+    "pct_avance": 98.216,
+    "actas_contabilizadas": 91111,
     "actas_totales": 92766,
-    "votos_validos": 18020441,
+    "votos_validos": 18064745,
     "sanchez": {
-      "votos": 9013284,
-      "pct_validos": 50.218
+      "votos": 9032092,
+      "pct_validos": 49.998
     },
     "fujimori": {
-      "votos": 9007157,
-      "pct_validos": 49.782
+      "votos": 9032653,
+      "pct_validos": 50.002
     }
   },
   "lima": {
     "sanchez": {
       "votos": 2267388,
-      "pct_validos": 36.503
+      "pct_validos": 36.5
     },
     "fujimori": {
       "votos": 3944554,
-      "pct_validos": 63.497
+      "pct_validos": 63.5
     },
     "votos_validos": 6211942,
     "actas_contabilizadas": 28333,
@@ -37,25 +37,25 @@
   "resto": {
     "sanchez": {
       "votos": 6658366,
-      "pct_validos": 57.58
+      "pct_validos": 57.588
     },
     "fujimori": {
       "votos": 4903664,
-      "pct_validos": 42.42
+      "pct_validos": 42.412
     },
     "votos_validos": 11562030,
     "pct_avance": 99.014
   },
   "extranjero": {
     "sanchez": {
-      "votos": 92778,
+      "votos": 106338,
       "pct_validos": 36.571
     },
     "fujimori": {
-      "votos": 160461,
+      "votos": 184435,
       "pct_validos": 63.429
     },
-    "votos_validos": 253239,
+    "votos_validos": 290773,
     "actas_contabilizadas": 2403,
     "actas_totales": 2543,
     "pct_avance": 94.495
