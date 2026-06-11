@@ -121,10 +121,15 @@
       "timestamp": "10/06/2026 18:54:59",
       "sanchez_votos": 0,
       "fujimori_votos": 0
+    },
+    {
+      "timestamp": "10/06/2026 19:47:28",
+      "sanchez_votos": 0,
+      "fujimori_votos": 0
     }
   ],
   "meta": {
-    "ultima_actualizacion": "10/06/2026 18:54:59",
+    "ultima_actualizacion": "10/06/2026 19:47:28",
     "fuente": "local_time"
   },
   "snapshots": [
@@ -147,6 +152,26 @@
       "lima": null,
       "extranjero": null,
       "timestamp_iso": "10/06/2026 18:54:59"
+    },
+    {
+      "nacional": {
+        "sanchez": {
+          "votos": 0,
+          "pct_validos": 0.0
+        },
+        "fujimori": {
+          "votos": 0,
+          "pct_validos": 0.0
+        },
+        "meta": {
+          "total_actas": 0,
+          "pct_avance": "0"
+        }
+      },
+      "peru": null,
+      "lima": null,
+      "extranjero": null,
+      "timestamp_iso": "10/06/2026 19:47:28"
     }
   ]
 }
