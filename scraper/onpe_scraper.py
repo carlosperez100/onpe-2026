@@ -316,6 +316,26 @@ def proyeccion_univariado(historial):
         "r2":           round(1 - ss_res / ss_tot, 3),
     }
 
+# ─── PROYECCIÓN INDIVIDUAL POR ESTRATO ───────────────────────────────────
+def proyeccion_estrato_individual(strat, sigma=0.003):
+    """MC projection for a single stratum to 100% actas.
+    Uses fixed sigma (reflects inherent geographic heterogeneity, not just uncounted votes).
+    """
+    if not strat:
+        return None
+    pct = strat["sanchez"]["pct_validos"] / 100
+    N   = 10_000
+    sims = sorted(random.gauss(pct, sigma) for _ in range(N))
+    prob_s = sum(1 for s in sims if s > 0.5) / N * 100
+    return {
+        "sanchez_pct":   round(pct * 100, 3),
+        "fujimori_pct":  round((1 - pct) * 100, 3),
+        "ic_inf":        round(sims[int(0.025 * N)] * 100, 3),
+        "ic_sup":        round(sims[int(0.975 * N)] * 100, 3),
+        "prob_sanchez":  round(prob_s, 1),
+        "prob_fujimori": round(100 - prob_s, 1),
+    }
+
 # ─── PROYECCIÓN ESTRATIFICADA + MONTE CARLO ───────────────────────────────
 # Modelo 3 estratos: Lima · Fuera de Lima · Internacional
 # Lima + FDL + Internacional = 100% del Nacional
@@ -469,6 +489,13 @@ def save_data(nacional, lima, resto, extran, ts_onpe):
     proy_univ   = proyeccion_univariado(historial)
     # Modelo 3 estratos: Lima · Fuera de Lima · Internacional
     proy_estrat = proyeccion_estratificada(lima_f, resto_f, extran_f, ex_pesos)
+    # Proyecciones individuales por estrato (sigma: L=0.003, R=0.004, E=0.005, N=0.002)
+    proy_por_estrato = {
+        "lima":       proyeccion_estrato_individual(lima_f,   0.003),
+        "resto":      proyeccion_estrato_individual(resto_f,  0.004),
+        "extranjero": proyeccion_estrato_individual(extran_f, 0.005),
+        "nacional":   proyeccion_estrato_individual(nacional, 0.002),
+    }
 
     out = {
         "meta": {
@@ -488,6 +515,7 @@ def save_data(nacional, lima, resto, extran, ts_onpe):
         "proyeccion": {
             "univariado":    proy_univ,
             "estratificado": proy_estrat,
+            "por_estrato":   proy_por_estrato,
         },
         "historial": historial,
     }

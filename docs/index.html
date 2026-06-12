@@ -285,6 +285,23 @@ table.t td:first-child,table.t th:first-child{text-align:left;}
   <div class="empate-callout" id="empate-note"></div>
 </div>
 
+<!-- ─── PROYECCIÓN POR ESTRATO ──────────────────────────────── -->
+<div class="proy-card" id="proy-estrato-card">
+  <div class="proy-title">Proyección al 100% — Análisis por Estrato</div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:10px;">
+    TODOS · Lima · Fuera de Lima · Internacional — σ: 0.20% | 0.30% | 0.40% | 0.50% · Monte Carlo 10 000 sims
+  </div>
+  <div id="proy-estrato-grid"
+       style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <!-- Populated by renderProyeccionEstrato() -->
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:var(--muted);line-height:1.5;">
+    σ representa la incertidumbre geográfica interna de cada estrato.
+    IC 95%: intervalo de confianza Monte Carlo.
+    Para TODOS se usa el Modelo Estratificado Recomendado.
+  </div>
+</div>
+
 <!-- ─── ETA: ESTIMACIÓN DE CIERRE DEL CONTEO ─────────────────── -->
 <div id="eta-card" style="
     margin:0 14px 14px;
@@ -581,6 +598,9 @@ function render(d) {
   // ── ETA cierre del conteo ──
   calcularETA(d);
 
+  // ── Proyección por estrato ──
+  renderProyeccionEstrato(d);
+
   // ── Tabla de estratos ──
   renderStratos(d);
 
@@ -588,6 +608,79 @@ function render(d) {
   const chartS = peS != null ? peS : puS;
   const chartF = peF != null ? peF : puF;
   renderChart(d, chartS, chartF);
+}
+
+// ─── PROYECCIÓN POR ESTRATO ──────────────────────────────────
+function renderProyeccionEstrato(d) {
+  const el = document.getElementById("proy-estrato-grid");
+  if (!el) return;
+
+  const pe    = (d.proyeccion || {}).por_estrato   || {};
+  const estrat = (d.proyeccion || {}).estratificado || {};
+  const pesos = estrat.pesos || {};
+
+  const grupos = [
+    { key: "nacional",   nombre: "TODOS (Nacional)",   icon: "🇵🇪", sigma: "0.20%",
+      dat: { ...estrat }, avanceKey: "nacional"   },
+    { key: "lima",       nombre: "Lima",                icon: "🏙️", sigma: "0.30%",
+      dat: pe.lima       || {}, avanceKey: "lima"       },
+    { key: "resto",      nombre: "Fuera de Lima",       icon: "🌄", sigma: "0.40%",
+      dat: pe.resto      || {}, avanceKey: "resto"      },
+    { key: "extranjero", nombre: "Internacional",       icon: "✈️", sigma: "0.50%",
+      dat: pe.extranjero || {}, avanceKey: "extranjero" },
+  ];
+
+  let html = "";
+  for (const g of grupos) {
+    const dat  = g.dat;
+    const sP   = dat.sanchez_pct;
+    const fP   = dat.fujimori_pct;
+    if (sP == null) continue;
+
+    const probS  = dat.prob_sanchez;
+    const probF  = dat.prob_fujimori;
+    const avance = (d[g.avanceKey] || {}).pct_avance;
+    const ganaS  = sP > fP;
+    const peso   = pesos[g.key];
+    const pesoTxt = peso != null
+      ? `<span style="font-size:9px;color:var(--muted);margin-left:4px;">w=${fmtP2(peso)}</span>`
+      : "";
+
+    const borderColor = ganaS ? "var(--green)" : "var(--orange)";
+    const ganadorTag  = ganaS
+      ? `<span class="proy-tag tag-s">▲ Sánchez</span>`
+      : `<span class="proy-tag tag-f">▲ Fujimori</span>`;
+
+    html += `
+    <div class="proy-block" style="border-left:3px solid ${borderColor};">
+      <div class="proy-block-label" style="font-size:11px;margin-bottom:6px;">
+        ${g.icon} <b>${g.nombre}</b>${pesoTxt}
+      </div>
+      <div class="proy-nums">
+        <span class="proy-pct-s">${fmtP(sP)}</span>
+        <span style="color:#5a6a7a;font-size:11px;align-self:center;">vs</span>
+        <span class="proy-pct-f">${fmtP(fP)}</span>
+      </div>
+      <div class="proy-ic" style="margin-top:3px;">
+        ${dat.ic_inf != null ? "IC 95%: [" + fmtP(dat.ic_inf) + " ; " + fmtP(dat.ic_sup) + "]" : ""}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
+        ${ganadorTag}
+        ${avance != null ? `<span style="font-size:9px;color:var(--muted);">avance ${fmtP(avance)}</span>` : ""}
+      </div>
+      ${probS != null ? `
+      <div class="prob-bar" style="margin-top:6px;height:10px;">
+        <div class="prob-s" style="width:${probS}%;"></div>
+        <div class="prob-f" style="width:${probF}%;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;margin-top:2px;">
+        <span style="color:var(--green);">${probS.toFixed(1)}% S</span>
+        <span style="color:var(--orange);">${probF.toFixed(1)}% F</span>
+      </div>` : ""}
+    </div>`;
+  }
+
+  el.innerHTML = html || "<p style='color:var(--muted);font-size:12px;grid-column:1/-1;'>Sin datos por estrato disponibles aún.</p>";
 }
 
 // ─── ETA: ESTIMACIÓN DE CIERRE DEL CONTEO ───────────────────
