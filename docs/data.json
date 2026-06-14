@@ -1,6 +1,6 @@
 {
   "meta": {
-    "ultima_actualizacion": "14/06/2026 05:15:26 A. M.",
+    "ultima_actualizacion": "14/06/2026 09:30:25 A. M.",
     "pct_avance": 98.552,
     "actas_contabilizadas": 91141,
     "actas_totales": 92766,
@@ -71,10 +71,10 @@
     "estratificado": {
       "sanchez_pct": 49.888,
       "fujimori_pct": 50.112,
-      "ic_inf": 49.358,
-      "ic_sup": 50.421,
-      "prob_sanchez": 34.2,
-      "prob_fujimori": 65.8,
+      "ic_inf": 49.346,
+      "ic_sup": 50.424,
+      "prob_sanchez": 33.8,
+      "prob_fujimori": 66.2,
       "pesos": {
         "lima": 34.86,
         "resto": 63.47,
@@ -86,34 +86,34 @@
       "lima": {
         "sanchez_pct": 36.503,
         "fujimori_pct": 63.497,
-        "ic_inf": 35.897,
-        "ic_sup": 37.086,
+        "ic_inf": 35.899,
+        "ic_sup": 37.088,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "resto": {
         "sanchez_pct": 57.589,
         "fujimori_pct": 42.411,
-        "ic_inf": 56.802,
-        "ic_sup": 58.373,
+        "ic_inf": 56.798,
+        "ic_sup": 58.381,
         "prob_sanchez": 100.0,
         "prob_fujimori": 0.0
       },
       "extranjero": {
         "sanchez_pct": 36.571,
         "fujimori_pct": 63.429,
-        "ic_inf": 35.587,
-        "ic_sup": 37.56,
+        "ic_inf": 35.601,
+        "ic_sup": 37.538,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "nacional": {
         "sanchez_pct": 49.949,
         "fujimori_pct": 50.051,
-        "ic_inf": 49.552,
-        "ic_sup": 50.347,
-        "prob_sanchez": 40.3,
-        "prob_fujimori": 59.7
+        "ic_inf": 49.553,
+        "ic_sup": 50.343,
+        "prob_sanchez": 40.0,
+        "prob_fujimori": 60.0
       }
     }
   },
