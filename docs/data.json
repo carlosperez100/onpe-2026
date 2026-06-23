@@ -1,23 +1,23 @@
 {
   "meta": {
-    "ultima_actualizacion": "23/06/2026 12:02:00 P. M.",
-    "pct_avance": 99.721,
+    "ultima_actualizacion": "23/06/2026 04:06:00 P. M.",
+    "pct_avance": 99.741,
     "actas_contabilizadas": 91141,
     "actas_totales": 92766,
     "fuente": "onpe_html"
   },
   "nacional": {
-    "pct_avance": 99.721,
+    "pct_avance": 99.741,
     "actas_contabilizadas": 91141,
     "actas_totales": 92766,
-    "votos_validos": 18342009,
+    "votos_validos": 18345544,
     "sanchez": {
-      "votos": 9150701,
-      "pct_validos": 49.889
+      "votos": 9152046,
+      "pct_validos": 49.887
     },
     "fujimori": {
-      "votos": 9191308,
-      "pct_validos": 50.111
+      "votos": 9193498,
+      "pct_validos": 50.113
     }
   },
   "lima": {
@@ -62,19 +62,19 @@
   },
   "proyeccion": {
     "univariado": {
-      "sanchez_pct": 50.002,
-      "fujimori_pct": 49.998,
-      "ic_inf": 49.391,
-      "ic_sup": 50.613,
-      "r2": 0.69
+      "sanchez_pct": 50.0,
+      "fujimori_pct": 50.0,
+      "ic_inf": 49.394,
+      "ic_sup": 50.605,
+      "r2": 0.689
     },
     "estratificado": {
       "sanchez_pct": 49.888,
       "fujimori_pct": 50.112,
-      "ic_inf": 49.36,
-      "ic_sup": 50.428,
-      "prob_sanchez": 34.1,
-      "prob_fujimori": 65.9,
+      "ic_inf": 49.354,
+      "ic_sup": 50.425,
+      "prob_sanchez": 34.0,
+      "prob_fujimori": 66.0,
       "pesos": {
         "lima": 34.86,
         "resto": 63.47,
@@ -86,34 +86,34 @@
       "lima": {
         "sanchez_pct": 36.503,
         "fujimori_pct": 63.497,
-        "ic_inf": 35.917,
-        "ic_sup": 37.091,
+        "ic_inf": 35.905,
+        "ic_sup": 37.079,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "resto": {
         "sanchez_pct": 57.589,
         "fujimori_pct": 42.411,
-        "ic_inf": 56.799,
-        "ic_sup": 58.382,
+        "ic_inf": 56.814,
+        "ic_sup": 58.392,
         "prob_sanchez": 100.0,
         "prob_fujimori": 0.0
       },
       "extranjero": {
         "sanchez_pct": 36.571,
         "fujimori_pct": 63.429,
-        "ic_inf": 35.576,
-        "ic_sup": 37.546,
+        "ic_inf": 35.584,
+        "ic_sup": 37.54,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "nacional": {
-        "sanchez_pct": 49.889,
-        "fujimori_pct": 50.111,
-        "ic_inf": 49.5,
-        "ic_sup": 50.273,
-        "prob_sanchez": 28.8,
-        "prob_fujimori": 71.2
+        "sanchez_pct": 49.887,
+        "fujimori_pct": 50.113,
+        "ic_inf": 49.486,
+        "ic_sup": 50.279,
+        "prob_sanchez": 28.1,
+        "prob_fujimori": 71.9
       }
     }
   },
@@ -617,6 +617,16 @@
       "fujimori_votos": 9191308,
       "fujimori_pct": 50.111,
       "brecha": -40607
+    },
+    {
+      "ts": "2026-06-23T16:12:37",
+      "hora": "23/06 16:12",
+      "actas": 99.741,
+      "sanchez_votos": 9152046,
+      "sanchez_pct": 49.887,
+      "fujimori_votos": 9193498,
+      "fujimori_pct": 50.113,
+      "brecha": -41452
     }
   ]
 }
