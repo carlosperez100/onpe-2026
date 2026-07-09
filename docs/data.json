@@ -71,10 +71,10 @@
     "estratificado": {
       "sanchez_pct": 49.888,
       "fujimori_pct": 50.112,
-      "ic_inf": 49.346,
-      "ic_sup": 50.425,
-      "prob_sanchez": 34.4,
-      "prob_fujimori": 65.6,
+      "ic_inf": 49.352,
+      "ic_sup": 50.432,
+      "prob_sanchez": 34.1,
+      "prob_fujimori": 65.9,
       "pesos": {
         "lima": 34.86,
         "resto": 63.47,
@@ -86,34 +86,34 @@
       "lima": {
         "sanchez_pct": 36.503,
         "fujimori_pct": 63.497,
-        "ic_inf": 35.927,
-        "ic_sup": 37.093,
+        "ic_inf": 35.91,
+        "ic_sup": 37.106,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "resto": {
         "sanchez_pct": 57.589,
         "fujimori_pct": 42.411,
-        "ic_inf": 56.795,
-        "ic_sup": 58.381,
+        "ic_inf": 56.811,
+        "ic_sup": 58.347,
         "prob_sanchez": 100.0,
         "prob_fujimori": 0.0
       },
       "extranjero": {
         "sanchez_pct": 36.571,
         "fujimori_pct": 63.429,
-        "ic_inf": 35.596,
-        "ic_sup": 37.565,
+        "ic_inf": 35.555,
+        "ic_sup": 37.561,
         "prob_sanchez": 0.0,
         "prob_fujimori": 100.0
       },
       "nacional": {
         "sanchez_pct": 49.865,
         "fujimori_pct": 50.135,
-        "ic_inf": 49.476,
+        "ic_inf": 49.465,
         "ic_sup": 50.252,
-        "prob_sanchez": 25.0,
-        "prob_fujimori": 75.0
+        "prob_sanchez": 23.6,
+        "prob_fujimori": 76.4
       }
     }
   },
